@@ -17,7 +17,7 @@ const Footer = () => {
               Join the Open edX Conference 2026!
             </h3>
             <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-              The 2026 Open edX Conference will present innovative use cases for one of the world's best open source online learning management systems.
+              The 2026 Open edX Conference will present innovative use cases for one of the world&apos;s best open source online learning management systems.
             </p>
             <a
               href="#register"
