@@ -1,4 +1,7 @@
-/* Open edX Clone - Global Styles */
+/* Actionuity edX - Global Styles */
+/* "Where Learning Becomes Execution" */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Lato:wght@300;400;500;600;700&family=Inconsolata:wght@400;500;600;700&display=swap');
 
 * {
   margin: 0;
@@ -10,22 +13,37 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Custom scrollbar */
+body {
+  background-color: #0D0D0D;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #ffffff;
+}
+
+/* Custom scrollbar - Zen Minimal */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0D1033;
+  background: #0D0D0D;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #C92228;
-  border-radius: 4px;
+  background: #2D2D2D;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a81d22;
+  background: #00FF44;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+}
+
+code, pre {
+  font-family: 'Inconsolata', monospace;
 }
 
 /* Line clamp utilities */
@@ -43,27 +61,6 @@ html {
   overflow: hidden;
 }
 
-/* Animation delays */
-.delay-100 {
-  animation-delay: 100ms;
-}
-
-.delay-200 {
-  animation-delay: 200ms;
-}
-
-.delay-300 {
-  animation-delay: 300ms;
-}
-
-/* Gradient text */
-.gradient-text {
-  background: linear-gradient(135deg, #C92228 0%, #ff6b6b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 /* Smooth hover transitions */
 button,
 a {
@@ -73,11 +70,30 @@ a {
 /* Focus styles for accessibility */
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid #C92228;
+  outline: 2px solid #00FF44;
   outline-offset: 2px;
 }
 
+/* Actionuity Green Glow */
+.glow-green {
+  box-shadow: 0 0 20px rgba(0, 255, 68, 0.3);
+}
+
+/* Legacy Gold Glow */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(242, 200, 75, 0.3);
+}
+
 /* Custom animations */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 255, 68, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 10px rgba(0, 255, 68, 0.1);
+  }
+}
+
 @keyframes float {
   0%, 100% {
     transform: translateY(0);
@@ -87,32 +103,132 @@ a:focus-visible {
   }
 }
 
-@keyframes pulse-glow {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(201, 34, 40, 0.4);
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
   }
-  50% {
-    box-shadow: 0 0 20px 10px rgba(201, 34, 40, 0.2);
+  100% {
+    background-position: 200% 0;
   }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
-/* Glass morphism effect */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+.animate-float {
+  animation: float 3s ease-in-out infinite;
 }
 
-/* Selection color */
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    #0D0D0D 0%,
+    #1A1A1A 50%,
+    #0D0D0D 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s linear infinite;
+}
+
+/* Selection color - Ingenuity Green */
 ::selection {
-  background: #C92228;
-  color: white;
+  background: #00FF44;
+  color: #0D0D0D;
+}
+
+/* Gradient text utility */
+.gradient-text-green {
+  background: linear-gradient(135deg, #00FF44 0%, #00CC36 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-gold {
+  background: linear-gradient(135deg, #F2C84B 0%, #D4A939 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Actionuity Shield Animation */
+@keyframes shield-pulse {
+  0%, 100% {
+    transform: rotate(45deg) scale(1);
+  }
+  50% {
+    transform: rotate(45deg) scale(1.05);
+  }
+}
+
+.shield-animate {
+  animation: shield-pulse 2s ease-in-out infinite;
+}
+
+/* Progress bar animation */
+@keyframes progress-grow {
+  from {
+    width: 0;
+  }
+}
+
+.progress-animate {
+  animation: progress-grow 1s ease-out forwards;
+}
+
+/* Border glow on hover */
+.border-glow-green:hover {
+  border-color: rgba(0, 255, 68, 0.5);
+  box-shadow: 0 0 20px rgba(0, 255, 68, 0.1);
+}
+
+/* Zen-Minimal button styles */
+.btn-primary {
+  background-color: #00FF44;
+  color: #0D0D0D;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #00CC36;
+  box-shadow: 0 0 30px rgba(0, 255, 68, 0.3);
+}
+
+.btn-secondary {
+  background-color: #2D2D2D;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: #3D3D3D;
+}
+
+/* Execution track phase colors */
+.phase-briefing {
+  border-color: #00FF44;
+}
+
+.phase-drills {
+  border-color: #F2C84B;
+}
+
+.phase-field {
+  border-color: #00FF44;
+}
+
+.phase-debrief {
+  border-color: #F2C84B;
 }
