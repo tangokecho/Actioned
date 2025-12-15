@@ -1,225 +1,297 @@
-// Mock data for Open edX clone
+// Actionuity edX Mock Data
+// "Where Learning Becomes Execution"
 
-export const trustedLogos = [
-  { name: 'edX', logo: 'https://www.edx.org/images/logos/edx-logo-elm.svg' },
-  { name: 'IBM', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg' },
-  { name: 'Microsoft', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg' },
-  { name: 'MIT', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg' },
-  { name: 'Harvard', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Harvard_University_coat_of_arms.svg' },
-  { name: 'XuetangX', logo: 'https://www.xuetangx.com/static/images/logo.png' }
-];
-
-export const stats = [
-  { value: '70K+', label: 'Courses', description: '70K+ courses are deployed by Open edX sites around the world' },
-  { value: '53', label: 'Languages supported', description: 'The Open edX platform supports 53 different languages' },
-  { value: '100M+', label: 'Learners', description: '100M+ learners use Open edX to develop in-demand skills and earn new credentials' },
-  { value: '99.96%', label: 'Availability', description: 'The edX site, powered by Open edX, achieves 99.96% availability' },
-  { value: '9 of 10', label: 'Top Universities', description: "Of the Times Higher Education World University Report's Top 10 universities, 9 use Open edX" },
-  { value: '20+', label: 'Gov/NGOs', description: 'In addition to university consortiums, 20+ governments and NGOs trust the Open edX platform to deliver education on a national scale.' }
-];
-
-export const ecosystemCards = [
-  {
-    icon: 'Wrench',
-    title: 'Service & Technology Partners',
-    description: 'Get started! Connect with 3rd-party tools and extensions to keep your LMS cutting-edge.',
-    link: '/marketplace'
-  },
-  {
-    icon: 'Users',
-    title: 'Community',
-    description: 'Get involved! Help build and support new Open edX innovations.',
-    link: '/community'
+export const brandConfig = {
+  name: 'Actionuity edX',
+  tagline: 'Where Learning Becomes Execution',
+  brandPromise: "We don't just teach concepts—we provide the frameworks, tools, and community to immediately apply learning to measurable outcomes.",
+  colors: {
+    graphiteBlack: '#0D0D0D',
+    ingenuityGreen: '#00FF44',
+    legacyGold: '#F2C84B',
+    darkGray: '#1A1A1A',
+    mediumGray: '#2D2D2D',
+    lightGray: '#4A4A4A'
   }
-];
-
-export const features = [
-  {
-    category: 'Empower learners and instructors',
-    items: [
-      'Advanced learner and Instructor dashboards',
-      'Interactive forums and discussion boards',
-      'Live video conferencing'
-    ]
-  },
-  {
-    category: 'Cross-device / cross-platform',
-    items: [
-      'Works on any device',
-      'Seamlessly integrates with third party tools and extensions such as Salesforce'
-    ]
-  },
-  {
-    category: 'Extensible and inclusive',
-    items: [
-      'Customizable and easy to use',
-      'Create your own learning platform in minutes',
-      'Use on-premise or in the cloud',
-      'Single tenant or multi-tenant'
-    ]
-  },
-  {
-    category: 'Rich authoring experience',
-    items: [
-      'Interactive content with adaptive video streaming',
-      'Multimedia, animation, and simulation',
-      'AR, VR, and more'
-    ]
-  },
-  {
-    category: 'Intelligent analytics',
-    items: [
-      'Dashboards with near real-time data analysis',
-      'Insights for course teams',
-      'Extensive data collection for learning researchers & instructors'
-    ]
-  }
-];
+};
 
 export const navItems = [
   {
-    title: 'The Platform',
+    title: 'Execution Tracks',
     submenu: [
-      { title: 'Overview', link: '/platform' },
-      { title: 'Features', link: '/features' },
-      { title: 'Releases', link: '/releases' }
+      { title: 'Browse All Tracks', link: '/tracks' },
+      { title: 'Innovation Foundations', link: '/tracks/innovation' },
+      { title: 'AI Action Officer', link: '/tracks/ai-officer' },
+      { title: 'GreenBid Bootcamp', link: '/tracks/greenbid' }
+    ]
+  },
+  {
+    title: 'Platform',
+    submenu: [
+      { title: 'Command Center', link: '/dashboard' },
+      { title: 'Skill Graph', link: '/skills' },
+      { title: 'Strategy Hub', link: '/strategy-hub' },
+      { title: 'Crew Quarters', link: '/crews' }
     ]
   },
   {
     title: 'Community',
     submenu: [
-      { title: 'Overview', link: '/community' },
-      { title: 'Contributors', link: '/contributors' },
-      { title: 'Events', link: '/events' }
+      { title: 'Wednesday Wins', link: '/community/wins' },
+      { title: 'Expert Network', link: '/community/experts' },
+      { title: 'Hackathons', link: '/community/hackathons' }
     ]
   },
   {
-    title: 'Marketplace',
-    link: '/marketplace'
+    title: 'Enterprise',
+    link: '/enterprise'
   },
   {
-    title: 'About',
-    submenu: [
-      { title: 'About Open edX', link: '/about' },
-      { title: 'Team', link: '/team' },
-      { title: 'Careers', link: '/careers' }
-    ]
-  },
-  {
-    title: 'Blog',
-    link: '/blog'
+    title: 'Pricing',
+    link: '/pricing'
   }
 ];
 
-export const blogPosts = [
+export const stats = [
+  { value: '90', label: 'Day Execution Tracks', description: 'Complete innovation cycles from idea to impact' },
+  { value: '3×', label: 'Faster Results', description: 'Implementation speed vs traditional learning' },
+  { value: '10K+', label: 'Executed Projects', description: 'Real-world outcomes, not just certificates' },
+  { value: '97%', label: 'Completion Rate', description: 'Action-driven learning keeps learners engaged' },
+  { value: '500+', label: 'Expert Network', description: 'Access to Action Officers and strategists' },
+  { value: '$2.4M', label: 'Learner Revenue', description: 'Generated through Money-in-30 projects' }
+];
+
+export const executionPhases = [
+  {
+    phase: 'BRIEFING',
+    days: 'Days 1-15',
+    title: 'Theory + Framework',
+    description: 'Micro-lessons introducing Actionuity IP, AI Innovation Assistant audits, Master Ledger setup',
+    icon: 'BookOpen',
+    color: '#00FF44'
+  },
+  {
+    phase: 'DRILLS',
+    days: 'Days 16-45',
+    title: 'Guided Practice',
+    description: 'Interactive sandboxes, real tools, QC AUDIT checkpoints for self-assessment',
+    icon: 'Target',
+    color: '#F2C84B'
+  },
+  {
+    phase: 'FIELD OPERATION',
+    days: 'Days 46-75',
+    title: 'Real Application',
+    description: 'Mandatory projects, Crew collaboration, Money-in-30 focus for immediate revenue',
+    icon: 'Rocket',
+    color: '#00FF44'
+  },
+  {
+    phase: 'DEBRIEF',
+    days: 'Days 76-90',
+    title: 'Integration & Legacy',
+    description: 'House of Hearts peer review, portfolio compilation, verifiable credentials',
+    icon: 'Award',
+    color: '#F2C84B'
+  }
+];
+
+export const executionTracks = [
   {
     id: 1,
-    title: 'Presenting at the Open edX Conference 2026 – Call for Speakers!',
-    excerpt: 'The Open edX Conference 2026 will provide in-depth and interactive presentations, ranging from keynotes to...',
-    date: 'June 15, 2025',
-    link: '/blog/conference-2026-speakers'
+    title: 'Innovation Execution Foundations',
+    subtitle: 'Ultimate Business Strategy Framework',
+    description: 'Master the 9-Pillar Framework and Tri-Core Loop to transform ideas into measurable impact.',
+    duration: '90 Days',
+    level: 'Foundation',
+    learners: '2,450',
+    completionRate: '94%',
+    skills: ['Strategic Thinking', 'Framework Application', 'Impact Measurement'],
+    featured: true
   },
   {
     id: 2,
-    title: 'How NASA Scaled Open Science Education to 20,000 Researchers with the Open edX Platform',
-    excerpt: 'When NASA set out to democratize open science practices across the global research community, they...',
-    date: 'June 10, 2025',
-    link: '/blog/nasa-open-science'
+    title: 'AI Action Officer Certification',
+    subtitle: 'GPT-5 Strategy Integration',
+    description: 'Become certified to deploy AI-powered strategy tools within the Actionuity ecosystem.',
+    duration: '90 Days',
+    level: 'Advanced',
+    learners: '1,890',
+    completionRate: '91%',
+    skills: ['AI Strategy', 'Prompt Engineering', 'Automation'],
+    featured: true
   },
   {
     id: 3,
-    title: 'Voting Is Now Open for the Open edX TOC Community Representatives!',
-    excerpt: 'The moment has arrived! Voting is now live for the Open edX Technical Oversight Committee...',
-    date: 'June 5, 2025',
-    link: '/blog/toc-voting'
+    title: 'GreenBid Bootcamp',
+    subtitle: 'Government Contracting Mastery',
+    description: 'Navigate government procurement with proven frameworks and templates.',
+    duration: '90 Days',
+    level: 'Specialized',
+    learners: '1,120',
+    completionRate: '96%',
+    skills: ['Proposal Writing', 'Compliance', 'Contract Management'],
+    featured: false
   },
   {
     id: 4,
-    title: 'Join Us for the Open edX Conference 2026!',
-    excerpt: 'We are excited to announce that Western Governors University (WGU) will be hosting the Open...',
-    date: 'May 28, 2025',
-    link: '/blog/conference-2026'
+    title: 'Youth Energy Entrepreneurship',
+    subtitle: 'Next-Gen Innovators',
+    description: 'Adapted execution track for young entrepreneurs aged 16-24.',
+    duration: '90 Days',
+    level: 'Foundation',
+    learners: '3,200',
+    completionRate: '89%',
+    skills: ['Business Basics', 'Innovation Mindset', 'First Revenue'],
+    featured: false
+  },
+  {
+    id: 5,
+    title: 'House of Hearts Leadership',
+    subtitle: 'Courage, Compassion, Accountability',
+    description: 'Develop leadership skills through the House of Hearts framework.',
+    duration: '90 Days',
+    level: 'Leadership',
+    learners: '1,650',
+    completionRate: '97%',
+    skills: ['Emotional Intelligence', 'Team Leadership', 'Ethical Decision Making'],
+    featured: true
+  }
+];
+
+export const platformFeatures = [
+  {
+    title: 'Mission Control',
+    description: 'Your command center showing active Execution Tracks with NEXT LOGICAL STEP highlighted.',
+    icon: 'LayoutDashboard'
+  },
+  {
+    title: 'Skill Graph',
+    description: 'Visual mapping of your competencies aligned with the 10-alities framework.',
+    icon: 'GitBranch'
+  },
+  {
+    title: 'Action Officer Hub',
+    description: 'Access AI Action Officers-as-a-Service for real-time strategy guidance.',
+    icon: 'Bot'
+  },
+  {
+    title: 'Crew Quarters',
+    description: 'Team workspaces with shared tools for collaborative execution.',
+    icon: 'Users'
+  },
+  {
+    title: 'Evidence Locker',
+    description: 'Your personal Master Ledger of all projects and verifiable outcomes.',
+    icon: 'FolderLock'
+  },
+  {
+    title: 'Strategy Hub',
+    description: 'Crowdsourced strategies you can fork, remix, and deploy.',
+    icon: 'Lightbulb'
+  }
+];
+
+export const pricingTiers = [
+  {
+    name: 'Explorer',
+    price: 'Free',
+    period: '',
+    description: 'Start your execution journey',
+    features: [
+      'Access to Briefing phases',
+      'Community forums',
+      'Basic Skill Graph',
+      'Limited AI Assistant access',
+      '1 Quick Win module/month'
+    ],
+    cta: 'Start Free',
+    highlighted: false
+  },
+  {
+    name: 'Executor',
+    price: '$99',
+    period: '/month',
+    description: 'Full track access for serious learners',
+    features: [
+      'Unlimited Execution Tracks',
+      'Full AI Innovation Assistant',
+      'Basic credentials',
+      'Crew collaboration',
+      'Weekly Office Hours',
+      'Evidence Locker'
+    ],
+    cta: 'Start Executing',
+    highlighted: true
+  },
+  {
+    name: 'Innovator',
+    price: '$299',
+    period: '/month',
+    description: 'Premium access for impact creators',
+    features: [
+      'Everything in Executor',
+      'NFT credentials',
+      'Strategy Hub publishing',
+      'Priority expert access',
+      'Quarterly hackathons',
+      'Royalty Badges eligibility',
+      'PriorityScore analytics'
+    ],
+    cta: 'Become Innovator',
+    highlighted: false
+  }
+];
+
+export const testimonials = [
+  {
+    name: 'Marcus Chen',
+    role: 'AI Action Officer Graduate',
+    quote: 'In 90 days, I went from learning about AI to deploying a strategy tool that now serves 200+ clients. This is not learning—this is launching.',
+    metric: '$45K revenue in first quarter'
+  },
+  {
+    name: 'Sarah Okonkwo',
+    role: 'GreenBid Bootcamp Alumni',
+    quote: 'The execution-driven approach meant I won my first government contract before completing the track. The frameworks are that practical.',
+    metric: '$180K contract won'
+  },
+  {
+    name: 'David Park',
+    role: 'Innovation Foundations Graduate',
+    quote: 'The difference between this and other platforms? I have a portfolio of executed projects, not just a certificate.',
+    metric: '3 products launched'
   }
 ];
 
 export const footerLinks = {
   platform: [
-    { title: 'Overview', link: '/platform' },
-    { title: 'Features', link: '/features' },
-    { title: 'Releases', link: '/releases' },
-    { title: 'Demo', link: '/demo' }
+    { title: 'Execution Tracks', link: '/tracks' },
+    { title: 'Command Center', link: '/dashboard' },
+    { title: 'Strategy Hub', link: '/strategy-hub' },
+    { title: 'Credentials', link: '/credentials' }
   ],
   community: [
-    { title: 'Overview', link: '/community' },
-    { title: 'Contributors', link: '/contributors' },
-    { title: 'Events', link: '/events' },
-    { title: 'Forum', link: '/forum' }
+    { title: 'Wednesday Wins', link: '/community/wins' },
+    { title: 'Expert Network', link: '/experts' },
+    { title: 'Hackathons', link: '/hackathons' },
+    { title: 'Crew Finder', link: '/crews' }
   ],
   resources: [
     { title: 'Documentation', link: '/docs' },
-    { title: 'Blog', link: '/blog' },
-    { title: 'Case Studies', link: '/case-studies' },
+    { title: 'API Access', link: '/api' },
+    { title: 'Brand Guidelines', link: '/brand' },
     { title: 'Support', link: '/support' }
   ],
   company: [
-    { title: 'About', link: '/about' },
+    { title: 'About Actionuity', link: '/about' },
+    { title: 'Enterprise', link: '/enterprise' },
     { title: 'Careers', link: '/careers' },
-    { title: 'Contact', link: '/contact' },
-    { title: 'Privacy Policy', link: '/privacy' }
+    { title: 'Contact', link: '/contact' }
   ]
 };
 
-export const languages = [
-  { code: 'en', name: 'English', flag: '🇺🇸' },
-  { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'pt', name: 'Portuguese', flag: '🇵🇹' },
-  { code: 'it', name: 'Italian', flag: '🇮🇹' },
-  { code: 'ar', name: 'Arabic', flag: '🇸🇦' },
-  { code: 'zh', name: 'Chinese', flag: '🇨🇳' },
-  { code: 'uk', name: 'Ukrainian', flag: '🇺🇦' }
-];
-
-export const courses = [
-  {
-    id: 1,
-    title: 'Introduction to Computer Science',
-    institution: 'Harvard University',
-    image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=225&fit=crop',
-    rating: 4.8,
-    learners: '3.2M',
-    duration: '12 weeks',
-    level: 'Introductory'
-  },
-  {
-    id: 2,
-    title: 'Data Science Fundamentals',
-    institution: 'MIT',
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=225&fit=crop',
-    rating: 4.7,
-    learners: '1.8M',
-    duration: '8 weeks',
-    level: 'Intermediate'
-  },
-  {
-    id: 3,
-    title: 'Machine Learning Basics',
-    institution: 'Stanford University',
-    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=400&h=225&fit=crop',
-    rating: 4.9,
-    learners: '2.5M',
-    duration: '10 weeks',
-    level: 'Intermediate'
-  },
-  {
-    id: 4,
-    title: 'Digital Marketing Strategy',
-    institution: 'University of Edinburgh',
-    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=225&fit=crop',
-    rating: 4.6,
-    learners: '890K',
-    duration: '6 weeks',
-    level: 'Beginner'
-  }
+export const pillars = [
+  'Clarity', 'Speed', 'Ingenuity', 'Discipline', 'Ethics',
+  'Resilience', 'Collaboration', 'Innovation', 'Legacy'
 ];
