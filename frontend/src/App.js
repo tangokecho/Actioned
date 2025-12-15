@@ -3,26 +3,24 @@ import "./App.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import HeroSection from "./components/HeroSection";
-import TrustedBy from "./components/TrustedBy";
-import StatsSection from "./components/StatsSection";
-import EcosystemSection from "./components/EcosystemSection";
-import FeaturesSection from "./components/FeaturesSection";
-import AboutSection from "./components/AboutSection";
-import ResourcesSection from "./components/ResourcesSection";
+import ExecutionTrackSection from "./components/ExecutionTrackSection";
+import TracksShowcase from "./components/TracksShowcase";
+import PlatformFeatures from "./components/PlatformFeatures";
+import Testimonials from "./components/Testimonials";
+import PricingSection from "./components/PricingSection";
 import Footer from "./components/Footer";
 
 const HomePage = () => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0D0D0D]">
       <Header />
       <main>
         <HeroSection />
-        <TrustedBy />
-        <StatsSection />
-        <EcosystemSection />
-        <FeaturesSection />
-        <AboutSection />
-        <ResourcesSection />
+        <ExecutionTrackSection />
+        <TracksShowcase />
+        <PlatformFeatures />
+        <Testimonials />
+        <PricingSection />
       </main>
       <Footer />
     </div>
