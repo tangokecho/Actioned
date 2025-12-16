@@ -3,7 +3,7 @@
 
 import os
 from typing import List, Dict, Any, Optional
-from emergentintegrations.llm.openai import chat
+from emergentintegrations.llm.openai import LlmChat, UserMessage
 from models import (
     AssistantMode, AssistantRequest, AssistantResponse,
     LearningPathRequest, LearningPath, LearningPathStep,
@@ -108,50 +108,39 @@ class RealTimeAssistant:
     """AI Assistant with three voice modes: Strategist, Ally, Oracle"""
     
     def __init__(self):
-        self.sessions: Dict[str, List[Dict]] = {}
+        self.sessions: Dict[str, LlmChat] = {}
     
     async def chat(self, request: AssistantRequest) -> AssistantResponse:
         session_id = request.session_id or str(uuid.uuid4())
         
-        # Initialize session if new
+        # Get or create session
         if session_id not in self.sessions:
-            self.sessions[session_id] = []
+            system_message = SYSTEM_PROMPTS[request.mode]
+            
+            # Add context if provided
+            if request.context:
+                context_str = "\n\nCurrent Context:\n"
+                if "current_track" in request.context:
+                    context_str += f"- Current Track: {request.context['current_track']}\n"
+                if "current_phase" in request.context:
+                    context_str += f"- Current Phase: {request.context['current_phase']}\n"
+                if "day" in request.context:
+                    context_str += f"- Day: {request.context['day']} of 90\n"
+                if "skills" in request.context:
+                    context_str += f"- Skills: {', '.join(request.context['skills'])}\n"
+                system_message += context_str
+            
+            self.sessions[session_id] = LlmChat(
+                api_key=EMERGENT_KEY,
+                session_id=session_id,
+                system_message=system_message
+            ).with_model("openai", "gpt-4o")
         
-        # Build conversation history
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPTS[request.mode]}
-        ]
+        llm_chat = self.sessions[session_id]
         
-        # Add context if provided
-        if request.context:
-            context_str = f"\n\nCurrent Context:\n"
-            if "current_track" in request.context:
-                context_str += f"- Current Track: {request.context['current_track']}\n"
-            if "current_phase" in request.context:
-                context_str += f"- Current Phase: {request.context['current_phase']}\n"
-            if "day" in request.context:
-                context_str += f"- Day: {request.context['day']} of 90\n"
-            if "skills" in request.context:
-                context_str += f"- Skills: {', '.join(request.context['skills'])}\n"
-            messages[0]["content"] += context_str
-        
-        # Add conversation history
-        for msg in self.sessions[session_id][-10:]:  # Last 10 messages
-            messages.append(msg)
-        
-        # Add current message
-        messages.append({"role": "user", "content": request.message})
-        
-        # Call LLM
-        response_text = await chat(
-            api_key=EMERGENT_KEY,
-            messages=messages,
-            model="gpt-4o"
-        )
-        
-        # Store in session
-        self.sessions[session_id].append({"role": "user", "content": request.message})
-        self.sessions[session_id].append({"role": "assistant", "content": response_text})
+        # Send message
+        user_msg = UserMessage(text=request.message)
+        response_text = await llm_chat.send_message(user_msg)
         
         # Extract suggestions and next step
         suggestions = self._extract_suggestions(response_text)
@@ -166,21 +155,19 @@ class RealTimeAssistant:
         )
     
     def _extract_suggestions(self, text: str) -> List[str]:
-        # Simple extraction - could be enhanced
         suggestions = []
         if "suggest" in text.lower() or "recommend" in text.lower():
             lines = text.split("\n")
             for line in lines:
                 if line.strip().startswith("-") or line.strip().startswith("•"):
                     suggestions.append(line.strip()[1:].strip())
-        return suggestions[:3]  # Limit to 3
+        return suggestions[:3]
     
     def _extract_next_step(self, text: str) -> Optional[str]:
         text_lower = text.lower()
         if "next logical step" in text_lower:
             idx = text_lower.find("next logical step")
             remaining = text[idx:]
-            # Find the content after "NEXT LOGICAL STEP:"
             if ":" in remaining:
                 step = remaining.split(":", 1)[1].split("\n")[0].strip()
                 return step
@@ -216,27 +203,24 @@ Respond in JSON format with this structure:
     "rationale": "Explanation of why this path..."
 }}"""
         
-        messages = [
-            {"role": "system", "content": PATH_GENERATOR_PROMPT},
-            {"role": "user", "content": prompt}
-        ]
-        
-        response_text = await chat(
+        session_id = str(uuid.uuid4())
+        llm_chat = LlmChat(
             api_key=EMERGENT_KEY,
-            messages=messages,
-            model="gpt-4o"
-        )
+            session_id=session_id,
+            system_message=PATH_GENERATOR_PROMPT
+        ).with_model("openai", "gpt-4o")
+        
+        user_msg = UserMessage(text=prompt)
+        response_text = await llm_chat.send_message(user_msg)
         
         # Parse JSON response
         try:
-            # Find JSON in response
             start = response_text.find("{")
             end = response_text.rfind("}") + 1
             if start >= 0 and end > start:
                 json_str = response_text[start:end]
                 data = json.loads(json_str)
             else:
-                # Fallback default path
                 data = self._default_path(request)
         except json.JSONDecodeError:
             data = self._default_path(request)
@@ -308,17 +292,17 @@ Create tasks that leverage diverse skills and promote collaboration."""
         }
         
         prompt = action_prompts.get(request.action, action_prompts["generate_tasks"])
+        prompt += "\n\nRespond in JSON format with 'recommendations' (list) and 'insights' (string)."
         
-        messages = [
-            {"role": "system", "content": COLLABORATION_MEDIATOR_PROMPT},
-            {"role": "user", "content": prompt + "\n\nRespond in JSON format with 'recommendations' (list) and 'insights' (string)."}
-        ]
-        
-        response_text = await chat(
+        session_id = str(uuid.uuid4())
+        llm_chat = LlmChat(
             api_key=EMERGENT_KEY,
-            messages=messages,
-            model="gpt-4o"
-        )
+            session_id=session_id,
+            system_message=COLLABORATION_MEDIATOR_PROMPT
+        ).with_model("openai", "gpt-4o")
+        
+        user_msg = UserMessage(text=prompt)
+        response_text = await llm_chat.send_message(user_msg)
         
         # Parse response
         try:
@@ -361,16 +345,15 @@ class LearningAnalyticsEngine:
             Provide 2-3 actionable insights in JSON format:
             {{"insights": ["insight1", "insight2"], "recommended_action": "action"}}"""
             
-            messages = [
-                {"role": "system", "content": "You are a learning analytics AI. Provide brief, actionable insights."},
-                {"role": "user", "content": prompt}
-            ]
-            
-            response = await chat(
+            session_id = str(uuid.uuid4())
+            llm_chat = LlmChat(
                 api_key=EMERGENT_KEY,
-                messages=messages,
-                model="gpt-4o"
-            )
+                session_id=session_id,
+                system_message="You are a learning analytics AI. Provide brief, actionable insights."
+            ).with_model("openai", "gpt-4o")
+            
+            user_msg = UserMessage(text=prompt)
+            response = await llm_chat.send_message(user_msg)
             
             try:
                 start = response.find("{")
@@ -406,12 +389,12 @@ class LearningAnalyticsEngine:
         
         return {
             "total_users": total_users,
-            "active_users_24h": int(total_users * 0.3),  # Simulated
+            "active_users_24h": int(total_users * 0.3) if total_users > 0 else 0,
             "total_tracks_started": total_enrollments,
             "total_tracks_completed": completed_tracks,
             "average_completion_rate": (completed_tracks / total_enrollments * 100) if total_enrollments > 0 else 0,
             "total_projects_executed": total_projects,
-            "learner_revenue_generated": total_projects * 2400.0  # Simulated based on Money-in-30
+            "learner_revenue_generated": total_projects * 2400.0
         }
 
 
