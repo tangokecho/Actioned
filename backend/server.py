@@ -259,11 +259,16 @@ async def generate_tricore_plan(strategy_context: Dict[str, Any], user_id: str):
     
     plan = await tricore_service.generate_plan(strategy_context)
     
-    # Store plan
-    plan["user_id"] = user_id
-    plan["created_at"] = datetime.utcnow().isoformat()
-    await db.tricore_plans.insert_one(plan)
+    # Store plan (create a copy without ObjectId issues)
+    plan_to_store = plan.copy()
+    plan_to_store["user_id"] = user_id
+    plan_to_store["created_at"] = datetime.utcnow().isoformat()
+    plan_to_store["id"] = str(uuid.uuid4())
+    await db.tricore_plans.insert_one(plan_to_store)
     
+    # Return without MongoDB _id
+    plan["user_id"] = user_id
+    plan["id"] = plan_to_store["id"]
     return plan
 
 # ==================== HOUSE OF HEARTS ====================
