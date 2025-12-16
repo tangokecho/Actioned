@@ -252,11 +252,11 @@ AVAILABLE EXECUTION TRACKS:
 
 LEARNER PROFILE:
 Goals: {', '.join(request_data.get('goals', []))}
-Current Skills: {json.dumps(request_data.get('current_skills', {{}}))}
+Current Skills: {json.dumps(request_data.get('current_skills', {}))}
 Time Commitment: {request_data.get('time_commitment_hours', 10)} hours/week
 Learning Style: {request_data.get('learning_style', 'sequential')}
 Preferred Tracks: {', '.join(request_data.get('preferred_tracks', [])) or 'No preference'}
-Constraints: {json.dumps(request_data.get('constraints', {{}}))}
+Constraints: {json.dumps(request_data.get('constraints', {}))}
 
 INSTRUCTIONS:
 1. Analyze learner's goals against available tracks
