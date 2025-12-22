@@ -1,8 +1,8 @@
-// Actionuity edX Mock Data
+// ActionEDx Mock Data
 // "Where Learning Becomes Execution"
 
 export const brandConfig = {
-  name: 'Actionuity edX',
+  name: 'ActionEDx',
   tagline: 'Where Learning Becomes Execution',
   brandPromise: "We don't just teach concepts—we provide the frameworks, tools, and community to immediately apply learning to measurable outcomes.",
   colors: {

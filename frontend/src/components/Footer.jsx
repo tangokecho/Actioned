@@ -54,7 +54,7 @@ const Footer = () => {
                   </div>
                 </div>
                 <span className="text-white font-bold text-lg">
-                  Actionuity <span className="text-[#00FF44]">edX</span>
+                  Action<span className="text-[#00FF44]">EDx</span>
                 </span>
               </Link>
               <p className="text-gray-500 text-sm mb-6 max-w-xs">

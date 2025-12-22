@@ -24,7 +24,7 @@ const Header = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>
-                Actionuity <span className="text-[#00FF44]">edX</span>
+                Action<span className="text-[#00FF44]">EDx</span>
               </span>
               <span className="text-[#4A4A4A] text-[10px] tracking-wider uppercase">Execute. Impact. Legacy.</span>
             </div>
