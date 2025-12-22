@@ -41,7 +41,7 @@ from ai_monitoring import ai_monitoring
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ.get('DB_NAME', 'actionuity_edx')]
+db = client[os.environ.get('DB_NAME', 'actionedx')]
 
 # Create the main app
 app = FastAPI(
@@ -460,7 +460,7 @@ async def websocket_assistant(websocket: WebSocket, session_id: str):
         await websocket.send_json({
             "type": "connected",
             "session_id": session_id,
-            "message": "🤖 **Actionuity AI Assistant Connected**\n\nHow can I help you execute your innovation journey today?"
+            "message": "🤖 **ActionEDx AI Assistant Connected**\n\nHow can I help you execute your innovation journey today?"
         })
         
         while True:
