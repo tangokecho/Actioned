@@ -45,7 +45,7 @@ db = client[os.environ.get('DB_NAME', 'actionuity_edx')]
 
 # Create the main app
 app = FastAPI(
-    title="Actionuity edX AI Backend",
+    title="ActionEDx AI Backend",
     description="AI-Powered Execution-Driven Learning Platform with Multi-Model Orchestration",
     version="2.0.0"
 )
@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 @api_router.get("/")
 async def root():
     return {
-        "message": "Actionuity edX AI Backend - Where Learning Becomes Execution",
+        "message": "ActionEDx AI Backend - Where Learning Becomes Execution",
         "version": "2.0.0",
         "status": "operational",
         "tagline": "From Idea → Impact → Legacy"
@@ -116,7 +116,7 @@ async def deployment_status():
             "ai_playground": "https://ai.actionuity.io/playground",
             "analytics": "https://analytics.actionuity.io"
         },
-        "message": "🚀 Actionuity edX AI Backend is LIVE and ready for emergent intelligence."
+        "message": "🚀 ActionEDx AI Backend is LIVE and ready for emergent intelligence."
     }
 
 # ==================== USER MANAGEMENT ====================
@@ -508,7 +508,7 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    logger.info("🚀 Actionuity edX AI Backend starting...")
+    logger.info("🚀 ActionEDx AI Backend starting...")
     logger.info("✅ AI Orchestrator: 3 replicas deployed (gpt-4o, claude-3-sonnet, gemini-pro)")
     logger.info("✅ Real-time Assistant: 5 replicas deployed (strategist, ally, oracle modes)")
     logger.info("✅ Learning Analytics: 2 replicas deployed (pattern detection, predictions)")
@@ -519,9 +519,9 @@ async def startup_event():
     logger.info("📊 Monitoring Dashboard: https://monitor.actionuity.io")
     logger.info("🤖 AI Playground: https://ai.actionuity.io/playground")
     logger.info("📈 Analytics: https://analytics.actionuity.io")
-    logger.info("🚀 Actionuity edX AI Backend is LIVE and ready for emergent intelligence.")
+    logger.info("🚀 ActionEDx AI Backend is LIVE and ready for emergent intelligence.")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
-    logger.info("Actionuity edX AI Backend shutdown complete.")
+    logger.info("ActionEDx AI Backend shutdown complete.")

@@ -1,4 +1,4 @@
-# AI Services for Actionuity edX
+# AI Services for ActionEDx
 # Real-time Assistant, Path Generator, Collaboration Mediator, Learning Analytics
 
 import os
