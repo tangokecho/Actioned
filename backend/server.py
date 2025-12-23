@@ -42,6 +42,9 @@ from ai_monitoring import ai_monitoring
 from cache_manager import cache_manager
 from websocket_manager import connection_manager
 from prometheus_metrics import MetricsRecorder, get_metrics_output, CONTENT_TYPE_LATEST
+from rate_limiter import rate_limiter, RateLimitTier
+from circuit_breaker import circuit_breaker_manager, CircuitBreakerOpenError
+from streaming_handler import streaming_handler
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
