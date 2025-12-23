@@ -146,11 +146,11 @@ class StreamingHandler:
             }
             
         except Exception as e:
-            logger.error(f\"Streaming error for {stream_id}: {e}\")\
+            logger.error(f"Streaming error for {stream_id}: {e}")
             yield {
-                \"type\": \"error\",
-                \"error\": str(e),
-                \"timestamp\": datetime.utcnow().isoformat()
+                "type": "error",
+                "error": str(e),
+                "timestamp": datetime.utcnow().isoformat()
             }
         
         finally:
