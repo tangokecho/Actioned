@@ -48,7 +48,7 @@ class StreamingHandler:
                 # Native streaming support
                 async for token in llm_chat.stream_message(user_message):
                     if not self.active_streams.get(stream_id, False):
-                        logger.info(f\"Stream {stream_id} cancelled\")\
+                        logger.info(f"Stream {stream_id} cancelled")
                         break
                     
                     buffer.append(token)
