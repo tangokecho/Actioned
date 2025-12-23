@@ -24,7 +24,7 @@ class LearningNode:
     competencies: List[str]
     track_id: Optional[str] = None
     metadata: Dict[str, Any] = None
-    
+
     def __hash__(self):
         return hash(self.node_id)
 
@@ -47,14 +47,14 @@ class LearningPath:
 
 class KnowledgeGraph:
     """Knowledge graph for learning path optimization"""
-    
+
     def __init__(self):
         self.graph = nx.DiGraph()
         self._initialize_graph()
-    
+
     def _initialize_graph(self):
         """Initialize knowledge graph with ActionEDx tracks and concepts"""
-        
+
         # Define learning nodes
         nodes = [
             # Foundation Concepts
@@ -106,7 +106,7 @@ class KnowledgeGraph:
                 competencies=["discipline", "habit_formation"],
                 metadata={"pillar": "Discipline"}
             ),
-            
+
             # Skills
             LearningNode(
                 node_id="skill_mvp",
@@ -144,7 +144,7 @@ class KnowledgeGraph:
                 competencies=["prompt_engineering", "ai_integration"],
                 metadata={}
             ),
-            
+
             # Tracks
             LearningNode(
                 node_id="track_innovation_foundations",
@@ -211,7 +211,7 @@ class KnowledgeGraph:
                 track_id="greenbid-bootcamp",
                 metadata={"duration_days": 90}
             ),
-            
+
             # Projects
             LearningNode(
                 node_id="project_strategy_audit",
@@ -238,45 +238,45 @@ class KnowledgeGraph:
                 metadata={}
             ),
         ]
-        
+
         # Add nodes to graph
         for node in nodes:
             self.graph.add_node(node.node_id, **node.__dict__)
-        
+
         # Add edges (prerequisites)
         for node in nodes:
             for prereq in node.prerequisites:
                 if prereq in self.graph:
                     self.graph.add_edge(prereq, node.node_id, weight=node.difficulty)
-    
+
     def get_node(self, node_id: str) -> Optional[LearningNode]:
         """Get node by ID"""
         if node_id not in self.graph:
             return None
-        
+
         data = self.graph.nodes[node_id]
         return LearningNode(**data)
-    
+
     def get_prerequisites(self, node_id: str) -> List[str]:
         """Get all prerequisites for a node"""
         if node_id not in self.graph:
             return []
         return list(self.graph.predecessors(node_id))
-    
+
     def check_prerequisites_met(self, node_id: str, completed_nodes: Set[str]) -> bool:
         """Check if all prerequisites are met"""
         prereqs = self.get_prerequisites(node_id)
         return all(p in completed_nodes for p in prereqs)
-    
+
     def find_optimal_path(self, start_node: str, goal_node: str,
                          user_profile: Dict[str, Any],
                          completed_nodes: Set[str]) -> Optional[List[str]]:
         """Find optimal learning path using A* algorithm"""
-        
+
         if start_node not in self.graph or goal_node not in self.graph:
             logger.error(f"Invalid nodes: {start_node} or {goal_node}")
             return None
-        
+
         # A* pathfinding
         def heuristic(node_a: str, node_b: str) -> float:
             """Heuristic function for A*"""
@@ -284,7 +284,7 @@ class KnowledgeGraph:
             node_a_data = self.graph.nodes[node_a]
             node_b_data = self.graph.nodes[node_b]
             return abs(node_a_data["difficulty"] - node_b_data["difficulty"])
-        
+
         try:
             path = nx.astar_path(
                 self.graph,
@@ -293,18 +293,207 @@ class KnowledgeGraph:
                 heuristic=heuristic,
                 weight='weight'
             )
-            
+
             # Filter out already completed nodes
             path = [n for n in path if n not in completed_nodes]
-            
+
             return path
-            
+
         except nx.NetworkXNoPath:
             logger.warning(f"No path from {start_node} to {goal_node}")
-            return None    
-    def generate_adaptive_path(self, user_id: str, goal_track: str,                             user_profile: Dict[str, Any],                             completed_nodes: Set[str]) -> LearningPath:        \"\"\"Generate adaptive learning path based on user profile\"\"\"                # Find entry point based on user's current knowledge        entry_point = self._find_entry_point(user_profile, completed_nodes)                # Find goal node        goal_node = f\"track_{goal_track}\"                if goal_node not in self.graph:            # Fallback to innovation foundations            goal_node = \"track_innovation_foundations\"                # Find optimal path        sequence = self.find_optimal_path(entry_point, goal_node, user_profile, completed_nodes)                if not sequence:            # Fallback: direct path to goal            sequence = [goal_node]                # Build path with nodes        nodes = [self.get_node(node_id) for node_id in sequence]        nodes = [n for n in nodes if n is not None]                # Calculate metrics        total_hours = sum(n.estimated_hours for n in nodes)        difficulty_progression = [n.difficulty for n in nodes]                # Calculate alignment score        alignment_score = self._calculate_alignment(nodes, user_profile)                # Find alternative paths        alternatives = self._find_alternative_paths(entry_point, goal_node, sequence, user_profile)                # Generate rationale        rationale = self._generate_path_rationale(nodes, user_profile, alignment_score)                return LearningPath(            path_id=f\"path_{user_id}_{datetime.utcnow().timestamp()}\",            user_id=user_id,            start_node=entry_point,            goal_node=goal_node,            nodes=nodes,            sequence=sequence,            total_hours=total_hours,            difficulty_progression=difficulty_progression,            alignment_score=alignment_score,            confidence=0.85,            rationale=rationale,            alternative_paths=alternatives,            generated_at=datetime.utcnow().isoformat()        )    
-    def _find_entry_point(self, user_profile: Dict[str, Any], completed: Set[str]) -> str:        \"\"\"Find optimal entry point based on user's current knowledge\"\"\"                skill_level = user_profile.get(\"skill_level\", \"novice\")        completed_tracks = user_profile.get(\"completed_tracks\", 0)                if completed_tracks >= 2:            return \"track_ai_action_officer\"        elif completed_tracks >= 1:            return \"track_innovation_foundations\"        elif skill_level in [\"advanced\", \"expert\"]:            return \"skill_9_pillar\"        else:            return \"concept_clarity\"    
-    def _calculate_alignment(self, nodes: List[LearningNode], profile: Dict) -> float:        \"\"\"Calculate how well path aligns with user profile\"\"\"                if not nodes:            return 0.0                score = 70.0  # Base score                # Check difficulty alignment        user_level = profile.get(\"skill_level\", \"novice\")        avg_difficulty = sum(n.difficulty for n in nodes) / len(nodes)                target_difficulty = {            \"novice\": 0.3,            \"intermediate\": 0.5,            \"advanced\": 0.7,            \"expert\": 0.8        }.get(user_level, 0.5)                difficulty_match = 1 - abs(avg_difficulty - target_difficulty)        score += difficulty_match * 15                # Check competency alignment        user_goals = set(profile.get(\"goals\", []))        path_competencies = set()        for node in nodes:            path_competencies.update(node.competencies)                if user_goals:            goal_overlap = len(user_goals & path_competencies) / len(user_goals)            score += goal_overlap * 15                return min(100.0, score)    
-    def _find_alternative_paths(self, start: str, goal: str,                              primary_path: List[str],                              profile: Dict) -> List[Dict[str, Any]]:        \"\"\"Find alternative learning paths\"\"\"                alternatives = []                try:            # Find all simple paths            all_paths = list(nx.all_simple_paths(self.graph, start, goal, cutoff=10))                        # Filter and score            for path in all_paths[:3]:  # Top 3 alternatives                if path != primary_path:                    nodes = [self.get_node(n) for n in path]                    nodes = [n for n in nodes if n is not None]                                        alternatives.append({                        \"sequence\": path,                        \"total_hours\": sum(n.estimated_hours for n in nodes),                        \"avg_difficulty\": sum(n.difficulty for n in nodes) / len(nodes) if nodes else 0,                        \"description\": self._describe_path_difference(path, primary_path)                    })                except:            pass                return alternatives[:2]  # Return max 2 alternatives    
-    def _describe_path_difference(self, alt_path: List[str], primary: List[str]) -> str:        \"\"\"Describe how alternative differs from primary\"\"\"                alt_set = set(alt_path)        primary_set = set(primary)                unique_to_alt = alt_set - primary_set                if len(alt_path) < len(primary):            return \"Faster route with fewer intermediate steps\"        elif len(alt_path) > len(primary):            return \"More comprehensive route with additional concepts\"        elif unique_to_alt:            return f\"Alternative approach focusing on different concepts\"        else:            return \"Similar difficulty, different sequence\"    
-    def _generate_path_rationale(self, nodes: List[LearningNode],                                profile: Dict, alignment: float) -> str:        \"\"\"Generate human-readable rationale for path\"\"\"                if not nodes:            return \"Starting from fundamentals\"                rationale_parts = []                # Alignment        if alignment >= 90:            rationale_parts.append(\"Highly aligned with your goals and skill level\")        elif alignment >= 75:            rationale_parts.append(\"Well-suited to your profile\")        else:            rationale_parts.append(\"Recommended foundational path\")                # Difficulty progression        if nodes:            start_difficulty = nodes[0].difficulty            end_difficulty = nodes[-1].difficulty                        if end_difficulty - start_difficulty > 0.3:                rationale_parts.append(\"Progressive difficulty increase for optimal challenge\")            else:                rationale_parts.append(\"Consistent difficulty level for steady progress\")                # Duration        total_hours = sum(n.estimated_hours for n in nodes)        if total_hours < 100:            rationale_parts.append(f\"Can be completed in ~{total_hours // 20} weeks with 5 hrs/week\")        else:            rationale_parts.append(f\"Comprehensive path requiring ~{total_hours // 20} weeks\")                return \". \".join(rationale_parts) + \".\"# Singleton instanceknowledge_graph = KnowledgeGraph()
+            return None
+
+    def generate_adaptive_path(
+        self,
+        user_id: str,
+        goal_track: str,
+        user_profile: Dict[str, Any],
+        completed_nodes: Set[str],
+    ) -> LearningPath:
+        """Generate adaptive learning path based on user profile"""
+
+        # Find entry point based on user's current knowledge
+        entry_point = self._find_entry_point(user_profile, completed_nodes)
+
+        # Find goal node
+        goal_node = f"track_{goal_track}"
+        if goal_node not in self.graph:
+            # Fallback to innovation foundations
+            goal_node = "track_innovation_foundations"
+
+        # Find optimal path
+        sequence = self.find_optimal_path(entry_point, goal_node, user_profile, completed_nodes)
+        if not sequence:
+            # Fallback: direct path to goal
+            sequence = [goal_node]
+
+        # Build path with nodes
+        nodes = [self.get_node(node_id) for node_id in sequence]
+        nodes = [n for n in nodes if n is not None]
+
+        # Calculate metrics
+        total_hours = sum(n.estimated_hours for n in nodes)
+        difficulty_progression = [n.difficulty for n in nodes]
+
+        # Calculate alignment score
+        alignment_score = self._calculate_alignment(nodes, user_profile)
+
+        # Find alternative paths
+        alternatives = self._find_alternative_paths(entry_point, goal_node, sequence, user_profile)
+
+        # Generate rationale
+        rationale = self._generate_path_rationale(nodes, user_profile, alignment_score)
+
+        return LearningPath(
+            path_id=f"path_{user_id}_{datetime.utcnow().timestamp()}",
+            user_id=user_id,
+            start_node=entry_point,
+            goal_node=goal_node,
+            nodes=nodes,
+            sequence=sequence,
+            total_hours=total_hours,
+            difficulty_progression=difficulty_progression,
+            alignment_score=alignment_score,
+            confidence=0.85,
+            rationale=rationale,
+            alternative_paths=alternatives,
+            generated_at=datetime.utcnow().isoformat()
+        )
+
+    def _find_entry_point(self, user_profile: Dict[str, Any], completed: Set[str]) -> str:
+        """Find optimal entry point based on user's current knowledge"""
+
+        skill_level = user_profile.get("skill_level", "novice")
+        completed_tracks = user_profile.get("completed_tracks", 0)
+
+        if completed_tracks >= 2:
+            return "track_ai_action_officer"
+        elif completed_tracks >= 1:
+            return "track_innovation_foundations"
+        elif skill_level in ["advanced", "expert"]:
+            return "skill_9_pillar"
+        else:
+            return "concept_clarity"
+
+    def _calculate_alignment(self, nodes: List[LearningNode], profile: Dict) -> float:
+        """Calculate how well path aligns with user profile"""
+
+        if not nodes:
+            return 0.0
+
+        score = 70.0  # Base score
+
+        # Check difficulty alignment
+        user_level = profile.get("skill_level", "novice")
+        avg_difficulty = sum(n.difficulty for n in nodes) / len(nodes)
+        target_difficulty = {
+            "novice": 0.3,
+            "intermediate": 0.5,
+            "advanced": 0.7,
+            "expert": 0.8
+        }.get(user_level, 0.5)
+        difficulty_match = 1 - abs(avg_difficulty - target_difficulty)
+        score += difficulty_match * 15
+
+        # Check competency alignment
+        user_goals = set(profile.get("goals", []))
+        path_competencies = set()
+        for node in nodes:
+            path_competencies.update(node.competencies)
+
+        if user_goals:
+            goal_overlap = len(user_goals & path_competencies) / len(user_goals)
+            score += goal_overlap * 15
+
+        return min(100.0, score)
+
+    def _find_alternative_paths(
+        self,
+        start: str,
+        goal: str,
+        primary_path: List[str],
+        profile: Dict
+    ) -> List[Dict[str, Any]]:
+        """Find alternative learning paths"""
+
+        alternatives: List[Dict[str, Any]] = []
+        try:
+            # Find all simple paths
+            all_paths = list(nx.all_simple_paths(self.graph, start, goal, cutoff=10))
+
+            # Filter and score
+            for path in all_paths[:3]:  # Top 3 alternatives
+                if path != primary_path:
+                    nodes = [self.get_node(n) for n in path]
+                    nodes = [n for n in nodes if n is not None]
+
+                    alternatives.append({
+                        "sequence": path,
+                        "total_hours": sum(n.estimated_hours for n in nodes),
+                        "avg_difficulty": sum(n.difficulty for n in nodes) / len(nodes) if nodes else 0,
+                        "description": self._describe_path_difference(path, primary_path)
+                    })
+        except Exception:
+            pass
+
+        return alternatives[:2]  # Return max 2 alternatives
+
+    def _describe_path_difference(self, alt_path: List[str], primary: List[str]) -> str:
+        """Describe how alternative differs from primary"""
+
+        alt_set = set(alt_path)
+        primary_set = set(primary)
+
+        unique_to_alt = alt_set - primary_set
+        if len(alt_path) < len(primary):
+            return "Faster route with fewer intermediate steps"
+        elif len(alt_path) > len(primary):
+            return "More comprehensive route with additional concepts"
+        elif unique_to_alt:
+            return f"Alternative approach focusing on different concepts"
+        else:
+            return "Similar difficulty, different sequence"
+
+    def _generate_path_rationale(
+        self,
+        nodes: List[LearningNode],
+        profile: Dict,
+        alignment: float
+    ) -> str:
+        """Generate human-readable rationale for path"""
+
+        if not nodes:
+            return "Starting from fundamentals"
+
+        rationale_parts = []
+
+        # Alignment
+        if alignment >= 90:
+            rationale_parts.append("Highly aligned with your goals and skill level")
+        elif alignment >= 75:
+            rationale_parts.append("Well-suited to your profile")
+        else:
+            rationale_parts.append("Recommended foundational path")
+
+        # Difficulty progression
+        if nodes:
+            start_difficulty = nodes[0].difficulty
+            end_difficulty = nodes[-1].difficulty
+
+            if end_difficulty - start_difficulty > 0.3:
+                rationale_parts.append("Progressive difficulty increase for optimal challenge")
+            else:
+                rationale_parts.append("Consistent difficulty level for steady progress")
+
+        # Duration
+        total_hours = sum(n.estimated_hours for n in nodes)
+        if total_hours < 100:
+            rationale_parts.append(f"Can be completed in ~{total_hours // 20} weeks with 5 hrs/week")
+        else:
+            rationale_parts.append(f"Comprehensive path requiring ~{total_hours // 20} weeks")
+
+        return ". ".join(rationale_parts) + "."
+
+
+# Singleton instance
+knowledge_graph = KnowledgeGraph()
