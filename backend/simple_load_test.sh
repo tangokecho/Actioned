@@ -2,7 +2,7 @@
 # Simple Load Test Script (without locust)
 # Tests API endpoints with concurrent requests
 
-BASE_URL="${1:-https://actionedx-ai.preview.emergentagent.com}"
+BASE_URL="${1:-https://ai-learning-path-25.preview.emergentagent.com}"
 CONCURRENT_USERS=10
 REQUESTS_PER_USER=20
 

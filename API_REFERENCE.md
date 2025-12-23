@@ -1,6 +1,6 @@
 # ActionEDx AI Backend - Complete API Reference
 
-**Base URL**: `https://actionedx-ai.preview.emergentagent.com`
+**Base URL**: `https://ai-learning-path-25.preview.emergentagent.com`
 
 ---
 
@@ -12,7 +12,7 @@
 Get comprehensive system health status including circuit breakers, services, and database.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/health
+curl https://ai-learning-path-25.preview.emergentagent.com/api/health
 ```
 
 **Response**:
@@ -38,7 +38,7 @@ curl https://actionedx-ai.preview.emergentagent.com/api/health
 **GET** `/api/deployment-status`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/deployment-status
+curl https://ai-learning-path-25.preview.emergentagent.com/api/deployment-status
 ```
 
 ---
@@ -51,7 +51,7 @@ curl https://actionedx-ai.preview.emergentagent.com/api/deployment-status
 Chat with AI assistant in different modes (strategist, ally, oracle).
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/assistant/chat \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/assistant/chat \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "demo-user",
@@ -90,7 +90,7 @@ ws.onmessage = (event) => {
 Comprehensive strategy audit using 9-Pillar Framework.
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/audit/9-pillar \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/audit/9-pillar \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "demo-user",
@@ -110,7 +110,7 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/audit/9-pillar \
 Generate Tri-Core Loop execution plan (GPT → CODEX → AGENT).
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/plan/tricore \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/plan/tricore \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": "demo-user",
@@ -128,7 +128,7 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/plan/tricore \
 Conduct peer review using Courage, Compassion, Accountability framework.
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/review/house-of-hearts \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/review/house-of-hearts \
   -H "Content-Type: application/json" \
   -d '{
     "submission_id": "proj-123",
@@ -151,7 +151,7 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/review/house-of-
 Get comprehensive learning analytics with ML-powered pattern detection.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/analytics/user/demo-user
+curl https://ai-learning-path-25.preview.emergentagent.com/api/analytics/user/demo-user
 ```
 
 **Response**:
@@ -179,7 +179,7 @@ curl https://actionedx-ai.preview.emergentagent.com/api/analytics/user/demo-user
 Get all 7 detectable learning patterns.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/analytics/patterns
+curl https://ai-learning-path-25.preview.emergentagent.com/api/analytics/patterns
 ```
 
 **Patterns**:
@@ -197,7 +197,7 @@ curl https://actionedx-ai.preview.emergentagent.com/api/analytics/patterns
 Predict completion probability and dropout risk.
 
 ```bash
-curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/analytics/predict-outcome?user_id=demo-user&track_id=innovation-foundations"
+curl -X POST "https://ai-learning-path-25.preview.emergentagent.com/api/analytics/predict-outcome?user_id=demo-user&track_id=innovation-foundations"
 ```
 
 ---
@@ -210,7 +210,7 @@ curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/analytics/predi
 Generate personalized learning path using A* pathfinding on knowledge graph.
 
 ```bash
-curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/paths/generate-adaptive?user_id=demo-user&goal_track=innovation-foundations" \
+curl -X POST "https://ai-learning-path-25.preview.emergentagent.com/api/paths/generate-adaptive?user_id=demo-user&goal_track=innovation-foundations" \
   -H "Content-Type: application/json" \
   -d '{
     "skill_level": "intermediate",
@@ -242,7 +242,7 @@ curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/paths/generate-
 Get knowledge graph statistics.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/paths/knowledge-graph
+curl https://ai-learning-path-25.preview.emergentagent.com/api/paths/knowledge-graph
 ```
 
 ### 13. Check Prerequisites
@@ -251,7 +251,7 @@ curl https://actionedx-ai.preview.emergentagent.com/api/paths/knowledge-graph
 Get prerequisites for a learning node.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/paths/prerequisites/track_ai_action_officer
+curl https://ai-learning-path-25.preview.emergentagent.com/api/paths/prerequisites/track_ai_action_officer
 ```
 
 ### 14. Validate Prerequisites
@@ -260,7 +260,7 @@ curl https://actionedx-ai.preview.emergentagent.com/api/paths/prerequisites/trac
 Check if user has met all prerequisites.
 
 ```bash
-curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/paths/validate-prerequisites?user_id=demo-user&target_node_id=track_innovation_foundations"
+curl -X POST "https://ai-learning-path-25.preview.emergentagent.com/api/paths/validate-prerequisites?user_id=demo-user&target_node_id=track_innovation_foundations"
 ```
 
 ---
@@ -273,7 +273,7 @@ curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/paths/validate-
 Get user's rate limit quota and usage.
 
 ```bash
-curl "https://actionedx-ai.preview.emergentagent.com/api/rate-limit/quota/demo-user?tier=free"
+curl "https://ai-learning-path-25.preview.emergentagent.com/api/rate-limit/quota/demo-user?tier=free"
 ```
 
 **Tiers**: `free`, `basic`, `pro`, `enterprise`
@@ -300,7 +300,7 @@ curl "https://actionedx-ai.preview.emergentagent.com/api/rate-limit/quota/demo-u
 **POST** `/api/rate-limit/reset/{user_id}`
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/rate-limit/reset/demo-user
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/rate-limit/reset/demo-user
 ```
 
 ### 17. Circuit Breakers Status
@@ -309,7 +309,7 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/rate-limit/reset
 Get all circuit breaker states.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/circuit-breakers
+curl https://ai-learning-path-25.preview.emergentagent.com/api/circuit-breakers
 ```
 
 **Response**:
@@ -331,28 +331,28 @@ curl https://actionedx-ai.preview.emergentagent.com/api/circuit-breakers
 **GET** `/api/circuit-breakers/{name}`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/circuit-breakers/ai_model_gpt-4o
+curl https://ai-learning-path-25.preview.emergentagent.com/api/circuit-breakers/ai_model_gpt-4o
 ```
 
 ### 19. Reset Circuit Breaker (Admin)
 **POST** `/api/circuit-breakers/{name}/reset`
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/circuit-breakers/ai_model_gpt-4o/reset
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/circuit-breakers/ai_model_gpt-4o/reset
 ```
 
 ### 20. Active Streams
 **GET** `/api/streaming/active`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/streaming/active
+curl https://ai-learning-path-25.preview.emergentagent.com/api/streaming/active
 ```
 
 ### 21. Cancel Stream
 **POST** `/api/streaming/{stream_id}/cancel`
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/streaming/stream-123/cancel
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/streaming/stream-123/cancel
 ```
 
 ---
@@ -365,49 +365,49 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/streaming/stream
 Get Prometheus-format metrics.
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/metrics
+curl https://ai-learning-path-25.preview.emergentagent.com/api/metrics
 ```
 
 ### 23. Cache Statistics
 **GET** `/api/cache/stats`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/cache/stats
+curl https://ai-learning-path-25.preview.emergentagent.com/api/cache/stats
 ```
 
 ### 24. Invalidate Cache
 **POST** `/api/cache/invalidate`
 
 ```bash
-curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/cache/invalidate?pattern=ai_cache:*"
+curl -X POST "https://ai-learning-path-25.preview.emergentagent.com/api/cache/invalidate?pattern=ai_cache:*"
 ```
 
 ### 25. Cache Health
 **GET** `/api/cache/health`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/cache/health
+curl https://ai-learning-path-25.preview.emergentagent.com/api/cache/health
 ```
 
 ### 26. WebSocket Statistics
 **GET** `/api/websocket/stats`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/websocket/stats
+curl https://ai-learning-path-25.preview.emergentagent.com/api/websocket/stats
 ```
 
 ### 27. AI Orchestrator Stats
 **GET** `/api/monitoring/orchestrator/stats`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/monitoring/orchestrator/stats
+curl https://ai-learning-path-25.preview.emergentagent.com/api/monitoring/orchestrator/stats
 ```
 
 ### 28. AI Monitoring Metrics
 **GET** `/api/monitoring/ai/metrics`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/monitoring/ai/metrics
+curl https://ai-learning-path-25.preview.emergentagent.com/api/monitoring/ai/metrics
 ```
 
 ---
@@ -418,14 +418,14 @@ curl https://actionedx-ai.preview.emergentagent.com/api/monitoring/ai/metrics
 **GET** `/api/tracks`
 
 ```bash
-curl https://actionedx-ai.preview.emergentagent.com/api/tracks
+curl https://ai-learning-path-25.preview.emergentagent.com/api/tracks
 ```
 
 ### 30. Create User
 **POST** `/api/users`
 
 ```bash
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/users \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/users \
   -H "Content-Type: application/json" \
   -d '{
     "email": "demo@example.com",
@@ -442,29 +442,29 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/users \
 
 ```bash
 # 1. Check system health
-curl https://actionedx-ai.preview.emergentagent.com/api/health
+curl https://ai-learning-path-25.preview.emergentagent.com/api/health
 
 # 2. Get learning patterns
-curl https://actionedx-ai.preview.emergentagent.com/api/analytics/patterns
+curl https://ai-learning-path-25.preview.emergentagent.com/api/analytics/patterns
 
 # 3. Analyze user
-curl https://actionedx-ai.preview.emergentagent.com/api/analytics/user/demo-user
+curl https://ai-learning-path-25.preview.emergentagent.com/api/analytics/user/demo-user
 
 # 4. Generate learning path
-curl -X POST "https://actionedx-ai.preview.emergentagent.com/api/paths/generate-adaptive?user_id=demo-user&goal_track=innovation-foundations" \
+curl -X POST "https://ai-learning-path-25.preview.emergentagent.com/api/paths/generate-adaptive?user_id=demo-user&goal_track=innovation-foundations" \
   -H "Content-Type: application/json" \
   -d '{"skill_level":"intermediate"}'
 
 # 5. Check rate limits
-curl "https://actionedx-ai.preview.emergentagent.com/api/rate-limit/quota/demo-user?tier=free"
+curl "https://ai-learning-path-25.preview.emergentagent.com/api/rate-limit/quota/demo-user?tier=free"
 
 # 6. Chat with AI assistant
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/assistant/chat \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/assistant/chat \
   -H "Content-Type: application/json" \
   -d '{"user_id":"demo-user","message":"Help me start my innovation journey","mode":"strategist"}'
 
 # 7. Request strategy audit
-curl -X POST https://actionedx-ai.preview.emergentagent.com/api/audit/9-pillar \
+curl -X POST https://ai-learning-path-25.preview.emergentagent.com/api/audit/9-pillar \
   -H "Content-Type: application/json" \
   -d '{"user_id":"demo-user","project_data":{"title":"My Project","stage":"ideation"}}'
 ```
@@ -477,19 +477,19 @@ curl -X POST https://actionedx-ai.preview.emergentagent.com/api/audit/9-pillar \
 
 ```bash
 # Cache performance
-curl https://actionedx-ai.preview.emergentagent.com/api/cache/stats
+curl https://ai-learning-path-25.preview.emergentagent.com/api/cache/stats
 
 # Circuit breaker health
-curl https://actionedx-ai.preview.emergentagent.com/api/circuit-breakers
+curl https://ai-learning-path-25.preview.emergentagent.com/api/circuit-breakers
 
 # Active WebSocket connections
-curl https://actionedx-ai.preview.emergentagent.com/api/websocket/stats
+curl https://ai-learning-path-25.preview.emergentagent.com/api/websocket/stats
 
 # AI orchestrator metrics
-curl https://actionedx-ai.preview.emergentagent.com/api/monitoring/orchestrator/stats
+curl https://ai-learning-path-25.preview.emergentagent.com/api/monitoring/orchestrator/stats
 
 # Prometheus metrics (sample)
-curl https://actionedx-ai.preview.emergentagent.com/api/metrics | grep "ai_requests_total"
+curl https://ai-learning-path-25.preview.emergentagent.com/api/metrics | grep "ai_requests_total"
 ```
 
 ---
@@ -501,7 +501,7 @@ Currently, all endpoints are public for development. In production, add:
 ```bash
 # Example with auth header
 curl -H "Authorization: Bearer YOUR_TOKEN" \
-  https://actionedx-ai.preview.emergentagent.com/api/analytics/user/demo-user
+  https://ai-learning-path-25.preview.emergentagent.com/api/analytics/user/demo-user
 ```
 
 ---
@@ -528,7 +528,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 5. Strategy Audit: `/api/audit/9-pillar`
 
 **Total Endpoints**: 30+  
-**Base URL**: `https://actionedx-ai.preview.emergentagent.com`
+**Base URL**: `https://ai-learning-path-25.preview.emergentagent.com`
 
 ---
 

@@ -77,4 +77,4 @@ class ActionEDxUser(HttpUser):
         self.client.get("/api/cache/stats")
 
 # Run with:
-# locust -f load_test.py --host=https://actionedx-ai.preview.emergentagent.com
+# locust -f load_test.py --host=https://ai-learning-path-25.preview.emergentagent.com

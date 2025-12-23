@@ -2,7 +2,7 @@
 # ActionEDx API Test Suite
 # Quick validation of all major endpoints
 
-BASE_URL="https://actionedx-ai.preview.emergentagent.com"
+BASE_URL="https://ai-learning-path-25.preview.emergentagent.com"
 
 echo "🚀 ActionEDx API Test Suite"
 echo "============================"

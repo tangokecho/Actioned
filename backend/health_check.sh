@@ -2,7 +2,7 @@
 # Health Check Script for Production Monitoring
 # Run this via cron or monitoring service
 
-BASE_URL="${1:-https://actionedx-ai.preview.emergentagent.com}"
+BASE_URL="${1:-https://ai-learning-path-25.preview.emergentagent.com}"
 ALERT_EMAIL="ops@actionedx.com"
 LOG_FILE="/var/log/actionedx/health-check.log"
 
