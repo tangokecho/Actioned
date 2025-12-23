@@ -11,6 +11,9 @@ import uuid
 import time
 from datetime import datetime
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
 
 EMERGENT_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
