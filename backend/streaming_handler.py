@@ -60,13 +60,13 @@ class StreamingHandler:
                         chunk_number += 1
                         
                         yield {
-                            \"type\": \"chunk\",
-                            \"chunk_number\": chunk_number,
-                            \"content\": chunk,
-                            \"tokens_in_chunk\": len(buffer),
-                            \"total_tokens\": total_tokens,
-                            \"elapsed_seconds\": time.time() - start_time,
-                            \"timestamp\": datetime.utcnow().isoformat()
+                            "type": "chunk",
+                            "chunk_number": chunk_number,
+                            "content": chunk,
+                            "tokens_in_chunk": len(buffer),
+                            "total_tokens": total_tokens,
+                            "elapsed_seconds": time.time() - start_time,
+                            "timestamp": datetime.utcnow().isoformat()
                         }
                         
                         buffer = []
@@ -80,13 +80,13 @@ class StreamingHandler:
                     chunk_number += 1
                     
                     yield {
-                        \"type\": \"chunk\",
-                        \"chunk_number\": chunk_number,
-                        \"content\": chunk,
-                        \"tokens_in_chunk\": len(buffer),
-                        \"total_tokens\": total_tokens,
-                        \"elapsed_seconds\": time.time() - start_time,
-                        \"timestamp\": datetime.utcnow().isoformat()
+                        "type": "chunk",
+                        "chunk_number": chunk_number,
+                        "content": chunk,
+                        "tokens_in_chunk": len(buffer),
+                        "total_tokens": total_tokens,
+                        "elapsed_seconds": time.time() - start_time,
+                        "timestamp": datetime.utcnow().isoformat()
                     }
             
             else:
@@ -101,7 +101,7 @@ class StreamingHandler:
                     if not self.active_streams.get(stream_id, False):
                         break
                     
-                    buffer.append(word + \" \")
+                    buffer.append(word + " ")
                     total_tokens += 1
                     
                     if len(buffer) >= buffer_size:
@@ -109,13 +109,13 @@ class StreamingHandler:
                         chunk_number += 1
                         
                         yield {
-                            \"type\": \"chunk\",
-                            \"chunk_number\": chunk_number,
-                            \"content\": chunk,
-                            \"tokens_in_chunk\": len(buffer),
-                            \"total_tokens\": total_tokens,
-                            \"elapsed_seconds\": time.time() - start_time,
-                            \"timestamp\": datetime.utcnow().isoformat()
+                            "type": "chunk",
+                            "chunk_number": chunk_number,
+                            "content": chunk,
+                            "tokens_in_chunk": len(buffer),
+                            "total_tokens": total_tokens,
+                            "elapsed_seconds": time.time() - start_time,
+                            "timestamp": datetime.utcnow().isoformat()
                         }
                         
                         buffer = []
@@ -127,22 +127,22 @@ class StreamingHandler:
                     chunk_number += 1
                     
                     yield {
-                        \"type\": \"chunk\",
-                        \"chunk_number\": chunk_number,
-                        \"content\": chunk,
-                        \"tokens_in_chunk\": len(buffer),
-                        \"total_tokens\": total_tokens,
-                        \"elapsed_seconds\": time.time() - start_time,
-                        \"timestamp\": datetime.utcnow().isoformat()
+                        "type": "chunk",
+                        "chunk_number": chunk_number,
+                        "content": chunk,
+                        "tokens_in_chunk": len(buffer),
+                        "total_tokens": total_tokens,
+                        "elapsed_seconds": time.time() - start_time,
+                        "timestamp": datetime.utcnow().isoformat()
                     }
             
             # Final metadata
             yield {
-                \"type\": \"complete\",
-                \"total_chunks\": chunk_number,
-                \"total_tokens\": total_tokens,
-                \"elapsed_seconds\": time.time() - start_time,
-                \"timestamp\": datetime.utcnow().isoformat()
+                "type": "complete",
+                "total_chunks": chunk_number,
+                "total_tokens": total_tokens,
+                "elapsed_seconds": time.time() - start_time,
+                "timestamp": datetime.utcnow().isoformat()
             }
             
         except Exception as e:
@@ -165,11 +165,11 @@ class StreamingHandler:
             logger.info(f"Stream {stream_id} cancellation requested")
     
     def is_streaming(self, stream_id: str) -> bool:
-        \"\"\"Check if stream is active\"\"\"
+        """Check if stream is active"""
         return self.active_streams.get(stream_id, False)
     
     def get_active_streams(self) -> List[str]:
-        \"\"\"Get list of active stream IDs\"\"\"
+        """Get list of active stream IDs"""
         return [sid for sid, active in self.active_streams.items() if active]
     
     async def stream_with_progress(
@@ -179,23 +179,23 @@ class StreamingHandler:
         stream_id: str,
         estimated_tokens: int = 500
     ) -> AsyncGenerator[Dict[str, Any], None]:
-        \"\"\"
+        """
         Stream with progress estimation
         
         Yields progress percentage based on estimated token count
-        \"\"\"
+        """
         
         tokens_received = 0
         
         async for chunk_data in self.stream_ai_response(llm_chat, user_message, stream_id):
-            if chunk_data[\"type\"] == \"chunk\":
-                tokens_received += chunk_data[\"tokens_in_chunk\"]
+            if chunk_data["type"] == "chunk":
+                tokens_received += chunk_data["tokens_in_chunk"]
                 progress = min(95, int((tokens_received / estimated_tokens) * 100))
                 
-                chunk_data[\"progress_percent\"] = progress
+                chunk_data["progress_percent"] = progress
             
-            elif chunk_data[\"type\"] == \"complete\":
-                chunk_data[\"progress_percent\"] = 100
+            elif chunk_data["type"] == "complete":
+                chunk_data["progress_percent"] = 100
             
             yield chunk_data
 
