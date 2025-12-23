@@ -701,6 +701,7 @@ async def startup_event():
     try:
         await cache_manager.connect()
         ai_orchestrator.set_cache_manager(cache_manager)
+        rate_limiter.cache_manager = cache_manager
         logger.info("✅ Redis cache connected")
         MetricsRecorder.update_service_health("cache", True)
     except Exception as e:
@@ -715,6 +716,9 @@ async def startup_event():
     logger.info("✅ Collaboration Mediator: 3 replicas deployed (House of Hearts)")
     logger.info("✅ Strategy Audit: 2 replicas deployed (9-Pillar, Tri-Core)")
     logger.info("✅ Monitoring: Prometheus + Grafana deployed")
+    logger.info("✅ Rate Limiting: Enabled with tier-based quotas")
+    logger.info("✅ Circuit Breakers: Active for all AI models")
+    logger.info("✅ Streaming: Token-by-token streaming ready")
     logger.info("📊 Monitoring Dashboard: https://monitor.actionuity.io")
     logger.info("🤖 AI Playground: https://ai.actionuity.io/playground")
     logger.info("📈 Analytics: https://analytics.actionuity.io")
