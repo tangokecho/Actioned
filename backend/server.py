@@ -620,6 +620,18 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     logger.info("🚀 ActionEDx AI Backend starting...")
+    
+    # Connect to Redis cache
+    try:
+        await cache_manager.connect()
+        ai_orchestrator.set_cache_manager(cache_manager)
+        logger.info("✅ Redis cache connected")
+        MetricsRecorder.update_service_health("cache", True)
+    except Exception as e:
+        logger.error(f"❌ Redis connection failed: {e}")
+        MetricsRecorder.update_service_health("cache", False)
+    
+    # Initialize services
     logger.info("✅ AI Orchestrator: 3 replicas deployed (gpt-4o, claude-3-sonnet, gemini-pro)")
     logger.info("✅ Real-time Assistant: 5 replicas deployed (strategist, ally, oracle modes)")
     logger.info("✅ Learning Analytics: 2 replicas deployed (pattern detection, predictions)")
@@ -633,6 +645,18 @@ async def startup_event():
     logger.info("🚀 ActionEDx AI Backend is LIVE and ready for emergent intelligence.")
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    """Shutdown event - cleanup connections"""
+    logger.info("Shutting down ActionEDx AI Backend...")
+    
+    # Disconnect from Redis
+    try:
+        await cache_manager.disconnect()
+        logger.info("✅ Redis disconnected")
+    except Exception as e:
+        logger.error(f"Redis disconnect error: {e}")
+    
+    # Close MongoDB connection
     client.close()
+    logger.info("✅ MongoDB disconnected")
     logger.info("ActionEDx AI Backend shutdown complete.")
