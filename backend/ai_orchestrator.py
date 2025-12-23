@@ -11,6 +11,9 @@ import uuid
 import time
 from datetime import datetime
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
 
 EMERGENT_KEY = os.environ.get('EMERGENT_LLM_KEY')
 
@@ -97,6 +100,12 @@ class AIOrchestrator:
         self.metrics: List[AIRequestMetrics] = []
         self.cache: Dict[str, Any] = {}
         self.active_sessions: Dict[str, LlmChat] = {}
+        self.cache_manager = None  # Will be set during startup
+    
+    def set_cache_manager(self, cache_manager):
+        """Set cache manager instance"""
+        self.cache_manager = cache_manager
+        logger.info("✅ Cache manager connected to AI Orchestrator")
     
     def route_request(self, task_type: TaskType, context: Dict[str, Any] = None,
                      prefer_model: AIModel = None) -> AIModel:
@@ -168,7 +177,8 @@ class AIOrchestrator:
     async def process_with_fallback(self, prompt: str, task_type: TaskType,
                                    context: Dict[str, Any] = None,
                                    system_message: str = None,
-                                   prefer_model: AIModel = None) -> Dict[str, Any]:
+                                   prefer_model: AIModel = None,
+                                   use_cache: bool = True) -> Dict[str, Any]:
         """Process request with automatic fallback on failure"""
         
         start_time = time.time()
@@ -176,6 +186,24 @@ class AIOrchestrator:
         
         # Route to primary model
         primary_model = self.route_request(task_type, context, prefer_model)
+        
+        # Check cache first
+        if use_cache and self.cache_manager:
+            try:
+                cached_response = await self.cache_manager.get_cached_response(
+                    prompt=prompt,
+                    task_type=task_type.value,
+                    model=primary_model.value,
+                    context=context
+                )
+                
+                if cached_response:
+                    logger.info(f"✅ Cache HIT for {task_type.value} with {primary_model.value}")
+                    cached_response["from_cache"] = True
+                    return cached_response
+            except Exception as e:
+                logger.error(f"Cache read error: {e}")
+        
         models_to_try = [primary_model] + self.get_fallback_models(primary_model, task_type)
         
         last_error = None
@@ -193,6 +221,16 @@ class AIOrchestrator:
                 if self._validate_response(result, task_type):
                     latency_ms = int((time.time() - start_time) * 1000)
                     
+                    # Build response
+                    response_data = {
+                        "success": True,
+                        "model": model.value,
+                        "response": result['response'],
+                        "latency_ms": latency_ms,
+                        "tokens_used": result.get('tokens_used', 0),
+                        "from_cache": False
+                    }
+                    
                     # Record metrics
                     self._record_metrics(
                         model=model,
@@ -202,13 +240,20 @@ class AIOrchestrator:
                         tokens_used=result.get('tokens_used', 0)
                     )
                     
-                    return {
-                        "success": True,
-                        "model": model.value,
-                        "response": result['response'],
-                        "latency_ms": latency_ms,
-                        "tokens_used": result.get('tokens_used', 0)
-                    }
+                    # Cache the response
+                    if use_cache and self.cache_manager:
+                        try:
+                            await self.cache_manager.cache_response(
+                                prompt=prompt,
+                                task_type=task_type.value,
+                                model=model.value,
+                                response=response_data,
+                                context=context
+                            )
+                        except Exception as e:
+                            logger.error(f"Cache write error: {e}")
+                    
+                    return response_data
                 else:
                     last_error = "Response quality validation failed"
                     continue
@@ -221,6 +266,7 @@ class AIOrchestrator:
                     latency_ms=int((time.time() - start_time) * 1000),
                     success=False
                 )
+                logger.error(f"Model {model.value} failed: {e}")
                 continue
         
         # All models failed
@@ -233,28 +279,40 @@ class AIOrchestrator:
     async def _call_model(self, model: AIModel, prompt: str,
                          system_message: str = None,
                          context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Call a specific AI model"""
+        """Call a specific AI model with circuit breaker protection"""
         
         provider, model_name = MODEL_PROVIDER_MAP.get(model, ("openai", "gpt-4o"))
         
-        # Create session
-        session_id = str(uuid.uuid4())
-        sys_msg = system_message or "You are a helpful AI assistant for the Actionuity edX learning platform."
+        # Get circuit breaker for this model
+        from circuit_breaker import circuit_breaker_manager, CircuitBreakerOpenError
+        breaker = circuit_breaker_manager.get_or_create_breaker(f"ai_model_{model.value}")
         
-        llm_chat = LlmChat(
-            api_key=EMERGENT_KEY,
-            session_id=session_id,
-            system_message=sys_msg
-        ).with_model(provider, model_name)
+        # Call with circuit breaker protection
+        async def make_ai_call():
+            # Create session
+            session_id = str(uuid.uuid4())
+            sys_msg = system_message or "You are a helpful AI assistant for the Actionuity edX learning platform."
+            
+            llm_chat = LlmChat(
+                api_key=EMERGENT_KEY,
+                session_id=session_id,
+                system_message=sys_msg
+            ).with_model(provider, model_name)
+            
+            # Send message
+            user_msg = UserMessage(text=prompt)
+            response = await llm_chat.send_message(user_msg)
+            
+            return {
+                "response": response,
+                "tokens_used": len(prompt.split()) + len(response.split())  # Approximate
+            }
         
-        # Send message
-        user_msg = UserMessage(text=prompt)
-        response = await llm_chat.send_message(user_msg)
-        
-        return {
-            "response": response,
-            "tokens_used": len(prompt.split()) + len(response.split())  # Approximate
-        }
+        try:
+            return await breaker.call(make_ai_call)
+        except CircuitBreakerOpenError as e:
+            logger.error(f"Circuit breaker open for {model.value}: {e}")
+            raise Exception(f"AI model {model.value} temporarily unavailable: {str(e)}")
     
     def _validate_response(self, result: Dict[str, Any], task_type: TaskType) -> bool:
         """Validate AI response meets quality standards"""

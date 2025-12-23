@@ -1,0 +1,160 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "actionedx-system-health",
+    "title": "ActionEDx System Health",
+    "tags": ["actionedx", "health", "monitoring"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "5s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health Status",
+        "type": "table",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "service_health",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transform": "table",
+        "columns": [
+          {"text": "Service", "value": "service"},
+          {"text": "Status", "value": "Value"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Cache Performance",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(cache_operations_total{status='hit'}[1m])",
+            "legendFormat": "Cache Hits",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(cache_operations_total{status='miss'}[1m])",
+            "legendFormat": "Cache Misses",
+            "refId": "B"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "WebSocket Messages",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 6},
+        "targets": [
+          {
+            "expr": "rate(websocket_messages_total[1m])",
+            "legendFormat": "{{direction}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Database Operations",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 6},
+        "targets": [
+          {
+            "expr": "rate(db_operations_total[1m])",
+            "legendFormat": "{{collection}} - {{operation}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 12},
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes / 1024 / 1024",
+            "legendFormat": "Resident Memory (MB)",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "CPU Usage",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 12},
+        "targets": [
+          {
+            "expr": "rate(process_cpu_seconds_total[1m]) * 100",
+            "legendFormat": "CPU %",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Cache Keys",
+        "type": "singlestat",
+        "gridPos": {"h": 3, "w": 6, "x": 0, "y": 18},
+        "targets": [
+          {
+            "expr": "cache_keys_total",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Active WebSockets",
+        "type": "singlestat",
+        "gridPos": {"h": 3, "w": 6, "x": 6, "y": 18},
+        "targets": [
+          {
+            "expr": "websocket_active_connections",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Error Rate",
+        "type": "singlestat",
+        "gridPos": {"h": 3, "w": 6, "x": 12, "y": 18},
+        "targets": [
+          {
+            "expr": "rate(ai_requests_total{status='failure'}[5m]) / rate(ai_requests_total[5m]) * 100",
+            "refId": "A"
+          }
+        ],
+        "format": "percent",
+        "colorBackground": true,
+        "thresholds": "1,5"
+      },
+      {
+        "id": 10,
+        "title": "Uptime",
+        "type": "singlestat",
+        "gridPos": {"h": 3, "w": 6, "x": 18, "y": 18},
+        "targets": [
+          {
+            "expr": "(time() - process_start_time_seconds) / 3600",
+            "refId": "A"
+          }
+        ],
+        "format": "h",
+        "prefix": "Hours:"
+      }
+    ],
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    }
+  }
+}

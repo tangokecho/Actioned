@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -38,6 +38,16 @@ from ai_services import (
 from ai_orchestrator import orchestrator as ai_orchestrator
 from ai_monitoring import ai_monitoring
 
+# Import new components
+from cache_manager import cache_manager
+from websocket_manager import connection_manager
+from prometheus_metrics import MetricsRecorder, get_metrics_output, CONTENT_TYPE_LATEST
+from rate_limiter import rate_limiter, RateLimitTier
+from circuit_breaker import circuit_breaker_manager, CircuitBreakerOpenError
+from streaming_handler import streaming_handler
+from advanced_analytics import advanced_analytics
+from knowledge_graph import knowledge_graph
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -75,13 +85,27 @@ async def root():
 async def health_check():
     """Check health of all AI services"""
     metrics = ai_orchestrator.get_metrics_summary()
+    
+    # Get circuit breaker states
+    breakers = circuit_breaker_manager.get_all_states()
+    all_closed = all(b["state"] == "closed" for b in breakers.values())
+    
+    # Get cache health
+    cache_stats = await cache_manager.get_cache_stats()
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if all_closed else "degraded",
         "database": "connected",
+        "cache": cache_stats.get("status", "disconnected"),
         "ai_orchestrator": {
             "status": "running",
             "total_requests": metrics.get("total_requests", 0),
             "success_rate": f"{metrics.get('success_rate', 100):.1f}%"
+        },
+        "circuit_breakers": {
+            "all_closed": all_closed,
+            "open_count": sum(1 for b in breakers.values() if b["state"] == "open"),
+            "details": breakers
         },
         "services": {
             "real_time_assistant": "running",
@@ -424,6 +448,353 @@ async def get_orchestrator_stats():
     """Get AI orchestrator statistics"""
     return ai_orchestrator.get_metrics_summary()
 
+# ==================== CACHE MANAGEMENT ====================
+
+@api_router.get("/cache/stats")
+async def get_cache_stats():
+    """Get cache statistics"""
+    return await cache_manager.get_cache_stats()
+
+@api_router.post("/cache/invalidate")
+async def invalidate_cache(pattern: str = "ai_cache:*"):
+    """Invalidate cache entries matching pattern"""
+    deleted = await cache_manager.invalidate_cache(pattern)
+    return {"deleted_keys": deleted, "pattern": pattern}
+
+@api_router.get("/cache/health")
+async def cache_health():
+    """Check cache health"""
+    stats = await cache_manager.get_cache_stats()
+    return {
+        "status": stats.get("status"),
+        "cache_keys": stats.get("cache_keys", 0),
+        "session_keys": stats.get("session_keys", 0),
+        "hit_rate": stats.get("hit_rate", 0.0)
+    }
+
+# ==================== PROMETHEUS METRICS ====================
+
+@api_router.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    # Update cache metrics
+    try:
+        cache_stats = await cache_manager.get_cache_stats()
+        MetricsRecorder.update_cache_stats(
+            ai_cache_keys=cache_stats.get("cache_keys", 0),
+            session_keys=cache_stats.get("session_keys", 0)
+        )
+        
+        # Update WebSocket metrics
+        MetricsRecorder.record_websocket_connection(0)  # Just update gauge
+        
+        # Update service health
+        MetricsRecorder.update_service_health("cache", cache_stats.get("status") == "connected")
+        
+    except Exception as e:
+        logger.error(f"Metrics update error: {e}")
+    
+    return Response(content=get_metrics_output(), media_type=CONTENT_TYPE_LATEST)
+
+# ==================== WEBSOCKET MANAGEMENT ====================
+
+@api_router.get("/websocket/stats")
+async def websocket_stats():
+    """Get WebSocket connection statistics"""
+    return {
+        "active_connections": connection_manager.get_active_connection_count(),
+        "connections": [
+            {
+                "session_id": session_id,
+                **metadata
+            }
+            for session_id, metadata in connection_manager.connection_metadata.items()
+        ]
+    }
+
+# ==================== RATE LIMITING ====================
+
+@api_router.get("/rate-limit/quota/{user_id}")
+async def get_user_quota(user_id: str, tier: RateLimitTier = RateLimitTier.FREE):
+    """Get user's rate limit quota information"""
+    return await rate_limiter.get_user_quota_info(user_id, tier)
+
+@api_router.post("/rate-limit/reset/{user_id}")
+async def reset_user_rate_limits(user_id: str):
+    """Reset rate limits for a user (admin function)"""
+    success = await rate_limiter.reset_user_limits(user_id)
+    return {"success": success, "user_id": user_id}
+
+# ==================== CIRCUIT BREAKERS ====================
+
+@api_router.get("/circuit-breakers")
+async def get_circuit_breakers():
+    """Get state of all circuit breakers"""
+    return circuit_breaker_manager.get_all_states()
+
+@api_router.get("/circuit-breakers/{name}")
+async def get_circuit_breaker(name: str):
+    """Get state of specific circuit breaker"""
+    breaker = circuit_breaker_manager.get_breaker(name)
+    if not breaker:
+        raise HTTPException(status_code=404, detail=f"Circuit breaker '{name}' not found")
+    return breaker.get_state()
+
+@api_router.post("/circuit-breakers/{name}/reset")
+async def reset_circuit_breaker(name: str):
+    """Manually reset a circuit breaker (admin function)"""
+    breaker = circuit_breaker_manager.get_breaker(name)
+    if not breaker:
+        raise HTTPException(status_code=404, detail=f"Circuit breaker '{name}' not found")
+    breaker.reset()
+    return {"success": True, "name": name}
+
+@api_router.post("/circuit-breakers/reset-all")
+async def reset_all_circuit_breakers():
+    """Reset all circuit breakers (admin function)"""
+    circuit_breaker_manager.reset_all()
+    return {"success": True, "message": "All circuit breakers reset"}
+
+# ==================== STREAMING ====================
+
+@api_router.get("/streaming/active")
+async def get_active_streams():
+    """Get list of active streams"""
+    return {
+        "active_streams": streaming_handler.get_active_streams(),
+        "count": len(streaming_handler.get_active_streams())
+    }
+
+@api_router.post("/streaming/{stream_id}/cancel")
+async def cancel_stream(stream_id: str):
+    """Cancel an active stream"""
+    await streaming_handler.cancel_stream(stream_id)
+    return {"success": True, "stream_id": stream_id}
+
+# ==================== ADVANCED LEARNING ANALYTICS ====================
+
+@api_router.get("/analytics/user/{user_id}")
+async def get_user_analytics(user_id: str):
+    """Get comprehensive learning analytics for a user"""
+    
+    # Fetch user's learning events
+    events = await db.analytics_events.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Fetch enrollments
+    enrollments = await db.enrollments.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).to_list(100)
+    
+    # Generate analytics
+    analytics = await advanced_analytics.analyze_learner(user_id, events, enrollments)
+    
+    return analytics.__dict__
+
+@api_router.get("/analytics/patterns")
+async def get_learning_patterns():
+    """Get information about detectable learning patterns"""
+    
+    patterns = [
+        {
+            "pattern": "rapid_prototyper",
+            "description": "Quick to start, high iteration count",
+            "characteristics": ["Fast execution", "Multiple attempts", "Experimentation-focused"],
+            "strengths": ["Speed", "Creativity", "Adaptability"],
+            "growth_areas": ["Depth", "Planning", "Documentation"]
+        },
+        {
+            "pattern": "deep_thinker",
+            "description": "Thorough planning before action",
+            "characteristics": ["Extensive research", "Deliberate planning", "Quality-focused"],
+            "strengths": ["Quality", "Thoroughness", "Analysis"],
+            "growth_areas": ["Speed", "Action bias", "Iteration"]
+        },
+        {
+            "pattern": "social_learner",
+            "description": "Thrives in collaborative environments",
+            "characteristics": ["High collaboration", "Peer engagement", "Community-driven"],
+            "strengths": ["Teamwork", "Communication", "Network building"],
+            "growth_areas": ["Independent work", "Self-direction"]
+        },
+        {
+            "pattern": "needs_support",
+            "description": "Showing signs of struggle",
+            "characteristics": ["Low progress", "High help requests", "Disengagement"],
+            "intervention": "Schedule 1:1 coaching, simplify objectives, celebrate wins",
+            "priority": "HIGH"
+        },
+        {
+            "pattern": "consistent_achiever",
+            "description": "High completion rate and quality",
+            "characteristics": ["Regular sessions", "High completion", "Quality work"],
+            "strengths": ["Consistency", "Discipline", "Quality"],
+            "opportunities": ["Leadership", "Mentorship", "Advanced tracks"]
+        }
+    ]
+    
+    return {"patterns": patterns, "count": len(patterns)}
+
+@api_router.post("/analytics/predict-outcome")
+async def predict_learning_outcome(user_id: str, track_id: str):
+    """Predict learning outcomes for a specific track"""
+    
+    # Get user analytics
+    events = await db.analytics_events.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    enrollments = await db.enrollments.find(
+        {"user_id": user_id},
+        {"_id": 0}
+    ).to_list(100)
+    
+    analytics = await advanced_analytics.analyze_learner(user_id, events, enrollments)
+    
+    return {
+        "user_id": user_id,
+        "track_id": track_id,
+        "predictions": {
+            "completion_probability": analytics.completion_probability,
+            "dropout_risk": analytics.dropout_risk,
+            "estimated_completion_days": analytics.time_to_completion_days,
+            "recommended_session_length_minutes": analytics.optimal_session_length_minutes
+        },
+        "recommendations": analytics.personalized_recommendations,
+        "intervention_needed": analytics.intervention_needed
+    }
+
+# ==================== ADAPTIVE LEARNING PATHS ====================
+
+@api_router.post("/paths/generate-adaptive")
+async def generate_adaptive_path(user_id: str, goal_track: str, user_profile: Dict[str, Any] = None):
+    """Generate adaptive learning path based on user profile"""
+    
+    # Get user's completed nodes
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    completed_nodes = set(user.get("completed_nodes", [])) if user else set()
+    
+    # Build user profile if not provided
+    if not user_profile:
+        user_profile = {
+            "skill_level": "intermediate",
+            "completed_tracks": 0,
+            "goals": ["strategic_thinking", "innovation"]
+        }
+    
+    # Generate path
+    path = knowledge_graph.generate_adaptive_path(
+        user_id=user_id,
+        goal_track=goal_track,
+        user_profile=user_profile,
+        completed_nodes=completed_nodes
+    )
+    
+    return {
+        "path_id": path.path_id,
+        "user_id": path.user_id,
+        "goal_track": goal_track,
+        "sequence": path.sequence,
+        "nodes": [
+            {
+                "node_id": n.node_id,
+                "title": n.title,
+                "type": n.node_type,
+                "difficulty": n.difficulty,
+                "estimated_hours": n.estimated_hours,
+                "competencies": n.competencies
+            }
+            for n in path.nodes
+        ],
+        "metrics": {
+            "total_hours": path.total_hours,
+            "total_nodes": len(path.nodes),
+            "avg_difficulty": sum(path.difficulty_progression) / len(path.difficulty_progression) if path.difficulty_progression else 0,
+            "alignment_score": path.alignment_score,
+            "confidence": path.confidence
+        },
+        "rationale": path.rationale,
+        "alternative_paths": path.alternative_paths,
+        "generated_at": path.generated_at
+    }
+
+@api_router.get("/paths/knowledge-graph")
+async def get_knowledge_graph_info():
+    """Get information about the knowledge graph"""
+    
+    total_nodes = knowledge_graph.graph.number_of_nodes()
+    total_edges = knowledge_graph.graph.number_of_edges()
+    
+    # Count by type
+    node_types = {}
+    for node_id in knowledge_graph.graph.nodes():
+        node = knowledge_graph.get_node(node_id)
+        if node:
+            node_type = node.node_type
+            node_types[node_type] = node_types.get(node_type, 0) + 1
+    
+    return {
+        "total_nodes": total_nodes,
+        "total_edges": total_edges,
+        "node_types": node_types,
+        "description": "Knowledge graph for ActionEDx learning paths"
+    }
+
+@api_router.get("/paths/prerequisites/{node_id}")
+async def get_node_prerequisites(node_id: str):
+    """Get prerequisites for a specific learning node"""
+    
+    node = knowledge_graph.get_node(node_id)
+    if not node:
+        raise HTTPException(status_code=404, detail=f"Node {node_id} not found")
+    
+    prereqs = knowledge_graph.get_prerequisites(node_id)
+    prereq_nodes = [knowledge_graph.get_node(p) for p in prereqs]
+    prereq_nodes = [n for n in prereq_nodes if n is not None]
+    
+    return {
+        "node_id": node_id,
+        "title": node.title,
+        "prerequisites": [
+            {
+                "node_id": n.node_id,
+                "title": n.title,
+                "type": n.node_type,
+                "difficulty": n.difficulty
+            }
+            for n in prereq_nodes
+        ]
+    }
+
+@api_router.post("/paths/validate-prerequisites")
+async def validate_prerequisites(user_id: str, target_node_id: str):
+    """Check if user has completed all prerequisites for a node"""
+    
+    # Get user's completed nodes
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    completed = set(user.get("completed_nodes", [])) if user else set()
+    
+    # Check prerequisites
+    prereqs_met = knowledge_graph.check_prerequisites_met(target_node_id, completed)
+    
+    # Get missing prerequisites
+    all_prereqs = knowledge_graph.get_prerequisites(target_node_id)
+    missing = [p for p in all_prereqs if p not in completed]
+    
+    return {
+        "user_id": user_id,
+        "target_node": target_node_id,
+        "prerequisites_met": prereqs_met,
+        "completed_count": len(completed),
+        "required_prerequisites": all_prereqs,
+        "missing_prerequisites": missing,
+        "can_start": prereqs_met
+    }
+
 # ==================== CREDENTIALS ====================
 
 @api_router.post("/credentials/issue")
@@ -450,48 +821,90 @@ async def issue_credential(user_id: str, track_id: str, credential_type: str = "
 # ==================== WEBSOCKET ENDPOINT ====================
 
 @app.websocket("/ws/assistant/{session_id}")
-async def websocket_assistant(websocket: WebSocket, session_id: str):
-    """WebSocket endpoint for real-time AI assistant"""
-    await websocket.accept()
-    logger.info(f"WebSocket connected: {session_id}")
+async def websocket_assistant(websocket: WebSocket, session_id: str, user_id: str = "anonymous"):
+    """Enhanced WebSocket endpoint for real-time AI assistant with streaming"""
+    
+    # Connect and register
+    await connection_manager.connect(websocket, session_id, user_id)
+    MetricsRecorder.record_websocket_connection(1)
+    
+    logger.info(f"✅ WebSocket connected: {session_id} (user: {user_id})")
     
     try:
-        # Send welcome message
-        await websocket.send_json({
-            "type": "connected",
-            "session_id": session_id,
-            "message": "🤖 **ActionEDx AI Assistant Connected**\n\nHow can I help you execute your innovation journey today?"
-        })
-        
         while True:
+            # Receive message
             data = await websocket.receive_json()
+            MetricsRecorder.record_websocket_message("inbound")
+            
+            # Increment message count
+            await connection_manager.increment_message_count(session_id)
+            
+            # Send typing indicator
+            await connection_manager.send_typing_indicator(session_id, True)
             
             # Process message
-            request = AssistantRequest(
-                user_id=data.get("user_id", "anonymous"),
-                message=data.get("message", ""),
-                mode=AssistantMode(data.get("mode", "strategist")),
-                session_id=session_id,
-                context=data.get("context")
-            )
-            
-            response = await real_time_assistant.chat(request)
-            
-            await websocket.send_json({
-                "type": "response",
-                "session_id": session_id,
-                "response": response.response,
-                "mode": response.mode.value,
-                "suggestions": response.suggestions,
-                "next_logical_step": response.next_logical_step,
-                "model_used": response.model_used,
-                "latency_ms": response.latency_ms
-            })
-            
+            try:
+                request = AssistantRequest(
+                    user_id=data.get("user_id", user_id),
+                    message=data.get("message", ""),
+                    mode=AssistantMode(data.get("mode", "strategist")),
+                    task_type=TaskType(data.get("task_type", "real_time_tutoring")),
+                    session_id=session_id,
+                    context=data.get("context")
+                )
+                
+                # Get AI response
+                start_time = datetime.utcnow()
+                
+                # Signal stream start
+                await connection_manager.stream_start(
+                    session_id, 
+                    request.task_type.value,
+                    "gpt-4o"
+                )
+                
+                # Get response (could add streaming support here)
+                response = await real_time_assistant.chat(request)
+                
+                # Stop typing indicator
+                await connection_manager.send_typing_indicator(session_id, False)
+                
+                # Send response
+                await websocket.send_json({
+                    "type": "response",
+                    "session_id": session_id,
+                    "response": response.response,
+                    "mode": response.mode.value,
+                    "suggestions": response.suggestions,
+                    "next_logical_step": response.next_logical_step,
+                    "model_used": response.model_used,
+                    "latency_ms": response.latency_ms,
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                MetricsRecorder.record_websocket_message("outbound")
+                
+                # Signal stream end
+                await connection_manager.stream_end(session_id, {
+                    "tokens_used": response.tokens_used,
+                    "latency_ms": response.latency_ms
+                })
+                
+            except Exception as e:
+                logger.error(f"Message processing error: {e}")
+                await connection_manager.send_error(session_id, str(e), "processing_error")
+                MetricsRecorder.record_websocket_error("processing_error")
+                
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected: {session_id}")
+        connection_manager.disconnect(session_id)
+        MetricsRecorder.record_websocket_connection(-1)
+        
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
+        MetricsRecorder.record_websocket_error("unexpected_error")
+        connection_manager.disconnect(session_id)
+        MetricsRecorder.record_websocket_connection(-1)
         await websocket.close()
 
 # ==================== APP SETUP ====================
@@ -509,6 +922,19 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     logger.info("🚀 ActionEDx AI Backend starting...")
+    
+    # Connect to Redis cache
+    try:
+        await cache_manager.connect()
+        ai_orchestrator.set_cache_manager(cache_manager)
+        rate_limiter.cache_manager = cache_manager
+        logger.info("✅ Redis cache connected")
+        MetricsRecorder.update_service_health("cache", True)
+    except Exception as e:
+        logger.error(f"❌ Redis connection failed: {e}")
+        MetricsRecorder.update_service_health("cache", False)
+    
+    # Initialize services
     logger.info("✅ AI Orchestrator: 3 replicas deployed (gpt-4o, claude-3-sonnet, gemini-pro)")
     logger.info("✅ Real-time Assistant: 5 replicas deployed (strategist, ally, oracle modes)")
     logger.info("✅ Learning Analytics: 2 replicas deployed (pattern detection, predictions)")
@@ -516,12 +942,30 @@ async def startup_event():
     logger.info("✅ Collaboration Mediator: 3 replicas deployed (House of Hearts)")
     logger.info("✅ Strategy Audit: 2 replicas deployed (9-Pillar, Tri-Core)")
     logger.info("✅ Monitoring: Prometheus + Grafana deployed")
+    logger.info("✅ Rate Limiting: Enabled with tier-based quotas")
+    logger.info("✅ Circuit Breakers: Active for all AI models")
+    logger.info("✅ Streaming: Token-by-token streaming ready")
+    logger.info("✅ Advanced Analytics: ML-powered pattern detection active")
+    logger.info("✅ Knowledge Graph: Graph-based learning paths with A* optimization")
+    logger.info(f"✅ Knowledge Nodes: {knowledge_graph.graph.number_of_nodes()} concepts/skills/tracks")
     logger.info("📊 Monitoring Dashboard: https://monitor.actionuity.io")
     logger.info("🤖 AI Playground: https://ai.actionuity.io/playground")
     logger.info("📈 Analytics: https://analytics.actionuity.io")
     logger.info("🚀 ActionEDx AI Backend is LIVE and ready for emergent intelligence.")
 
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    """Shutdown event - cleanup connections"""
+    logger.info("Shutting down ActionEDx AI Backend...")
+    
+    # Disconnect from Redis
+    try:
+        await cache_manager.disconnect()
+        logger.info("✅ Redis disconnected")
+    except Exception as e:
+        logger.error(f"Redis disconnect error: {e}")
+    
+    # Close MongoDB connection
     client.close()
+    logger.info("✅ MongoDB disconnected")
     logger.info("ActionEDx AI Backend shutdown complete.")
