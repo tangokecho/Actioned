@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect, Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -37,6 +37,11 @@ from ai_services import (
 )
 from ai_orchestrator import orchestrator as ai_orchestrator
 from ai_monitoring import ai_monitoring
+
+# Import new components
+from cache_manager import cache_manager
+from websocket_manager import connection_manager
+from prometheus_metrics import MetricsRecorder, get_metrics_output, CONTENT_TYPE_LATEST
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
