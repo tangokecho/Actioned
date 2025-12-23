@@ -429,6 +429,70 @@ async def get_orchestrator_stats():
     """Get AI orchestrator statistics"""
     return ai_orchestrator.get_metrics_summary()
 
+# ==================== CACHE MANAGEMENT ====================
+
+@api_router.get("/cache/stats")
+async def get_cache_stats():
+    """Get cache statistics"""
+    return await cache_manager.get_cache_stats()
+
+@api_router.post("/cache/invalidate")
+async def invalidate_cache(pattern: str = "ai_cache:*"):
+    """Invalidate cache entries matching pattern"""
+    deleted = await cache_manager.invalidate_cache(pattern)
+    return {"deleted_keys": deleted, "pattern": pattern}
+
+@api_router.get("/cache/health")
+async def cache_health():
+    """Check cache health"""
+    stats = await cache_manager.get_cache_stats()
+    return {
+        "status": stats.get("status"),
+        "cache_keys": stats.get("cache_keys", 0),
+        "session_keys": stats.get("session_keys", 0),
+        "hit_rate": stats.get("hit_rate", 0.0)
+    }
+
+# ==================== PROMETHEUS METRICS ====================
+
+@api_router.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint"""
+    # Update cache metrics
+    try:
+        cache_stats = await cache_manager.get_cache_stats()
+        MetricsRecorder.update_cache_stats(
+            ai_cache_keys=cache_stats.get("cache_keys", 0),
+            session_keys=cache_stats.get("session_keys", 0)
+        )
+        
+        # Update WebSocket metrics
+        MetricsRecorder.record_websocket_connection(0)  # Just update gauge
+        
+        # Update service health
+        MetricsRecorder.update_service_health("cache", cache_stats.get("status") == "connected")
+        
+    except Exception as e:
+        logger.error(f"Metrics update error: {e}")
+    
+    return Response(content=get_metrics_output(), media_type=CONTENT_TYPE_LATEST)
+
+# ==================== WEBSOCKET MANAGEMENT ====================
+
+@api_router.get("/websocket/stats")
+async def websocket_stats():
+    """Get WebSocket connection statistics"""
+    return {
+        "active_connections": connection_manager.get_active_connection_count(),
+        "connections": [
+            {
+                "session_id": session_id,
+                **metadata
+            }
+            for session_id, metadata in connection_manager.connection_metadata.items()
+        ]
+    }
+
 # ==================== CREDENTIALS ====================
 
 @api_router.post("/credentials/issue")
