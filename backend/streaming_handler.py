@@ -91,7 +91,7 @@ class StreamingHandler:
             
             else:
                 # Fallback: Non-streaming response with simulated streaming
-                logger.info(f\"Stream {stream_id}: Using simulated streaming\")\
+                logger.info(f"Stream {stream_id}: Using simulated streaming")
                 
                 response = await llm_chat.send_message(user_message)
                 
