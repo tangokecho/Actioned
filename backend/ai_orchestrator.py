@@ -100,6 +100,12 @@ class AIOrchestrator:
         self.metrics: List[AIRequestMetrics] = []
         self.cache: Dict[str, Any] = {}
         self.active_sessions: Dict[str, LlmChat] = {}
+        self.cache_manager = None  # Will be set during startup
+    
+    def set_cache_manager(self, cache_manager):
+        """Set cache manager instance"""
+        self.cache_manager = cache_manager
+        logger.info("✅ Cache manager connected to AI Orchestrator")
     
     def route_request(self, task_type: TaskType, context: Dict[str, Any] = None,
                      prefer_model: AIModel = None) -> AIModel:
