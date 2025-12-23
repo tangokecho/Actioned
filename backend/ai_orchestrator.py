@@ -279,28 +279,40 @@ class AIOrchestrator:
     async def _call_model(self, model: AIModel, prompt: str,
                          system_message: str = None,
                          context: Dict[str, Any] = None) -> Dict[str, Any]:
-        """Call a specific AI model"""
+        """Call a specific AI model with circuit breaker protection"""
         
         provider, model_name = MODEL_PROVIDER_MAP.get(model, ("openai", "gpt-4o"))
         
-        # Create session
-        session_id = str(uuid.uuid4())
-        sys_msg = system_message or "You are a helpful AI assistant for the Actionuity edX learning platform."
+        # Get circuit breaker for this model
+        from circuit_breaker import circuit_breaker_manager, CircuitBreakerOpenError
+        breaker = circuit_breaker_manager.get_or_create_breaker(f"ai_model_{model.value}")
         
-        llm_chat = LlmChat(
-            api_key=EMERGENT_KEY,
-            session_id=session_id,
-            system_message=sys_msg
-        ).with_model(provider, model_name)
+        # Call with circuit breaker protection
+        async def make_ai_call():
+            # Create session
+            session_id = str(uuid.uuid4())
+            sys_msg = system_message or "You are a helpful AI assistant for the Actionuity edX learning platform."
+            
+            llm_chat = LlmChat(
+                api_key=EMERGENT_KEY,
+                session_id=session_id,
+                system_message=sys_msg
+            ).with_model(provider, model_name)
+            
+            # Send message
+            user_msg = UserMessage(text=prompt)
+            response = await llm_chat.send_message(user_msg)
+            
+            return {
+                "response": response,
+                "tokens_used": len(prompt.split()) + len(response.split())  # Approximate
+            }
         
-        # Send message
-        user_msg = UserMessage(text=prompt)
-        response = await llm_chat.send_message(user_msg)
-        
-        return {
-            "response": response,
-            "tokens_used": len(prompt.split()) + len(response.split())  # Approximate
-        }
+        try:
+            return await breaker.call(make_ai_call)
+        except CircuitBreakerOpenError as e:
+            logger.error(f"Circuit breaker open for {model.value}: {e}")
+            raise Exception(f"AI model {model.value} temporarily unavailable: {str(e)}")
     
     def _validate_response(self, result: Dict[str, Any], task_type: TaskType) -> bool:
         """Validate AI response meets quality standards"""
