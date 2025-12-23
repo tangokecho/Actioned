@@ -45,6 +45,8 @@ from prometheus_metrics import MetricsRecorder, get_metrics_output, CONTENT_TYPE
 from rate_limiter import rate_limiter, RateLimitTier
 from circuit_breaker import circuit_breaker_manager, CircuitBreakerOpenError
 from streaming_handler import streaming_handler
+from advanced_analytics import advanced_analytics
+from knowledge_graph import knowledge_graph
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
