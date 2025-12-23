@@ -159,10 +159,10 @@ class StreamingHandler:
                 del self.active_streams[stream_id]
     
     async def cancel_stream(self, stream_id: str):
-        \"\"\"Cancel an active stream\"\"\"
+        """Cancel an active stream"""
         if stream_id in self.active_streams:
             self.active_streams[stream_id] = False
-            logger.info(f\"Stream {stream_id} cancellation requested\")\
+            logger.info(f"Stream {stream_id} cancellation requested")
     
     def is_streaming(self, stream_id: str) -> bool:
         \"\"\"Check if stream is active\"\"\"
