@@ -177,7 +177,8 @@ class AIOrchestrator:
     async def process_with_fallback(self, prompt: str, task_type: TaskType,
                                    context: Dict[str, Any] = None,
                                    system_message: str = None,
-                                   prefer_model: AIModel = None) -> Dict[str, Any]:
+                                   prefer_model: AIModel = None,
+                                   use_cache: bool = True) -> Dict[str, Any]:
         """Process request with automatic fallback on failure"""
         
         start_time = time.time()
@@ -185,6 +186,24 @@ class AIOrchestrator:
         
         # Route to primary model
         primary_model = self.route_request(task_type, context, prefer_model)
+        
+        # Check cache first
+        if use_cache and self.cache_manager:
+            try:
+                cached_response = await self.cache_manager.get_cached_response(
+                    prompt=prompt,
+                    task_type=task_type.value,
+                    model=primary_model.value,
+                    context=context
+                )
+                
+                if cached_response:
+                    logger.info(f"✅ Cache HIT for {task_type.value} with {primary_model.value}")
+                    cached_response["from_cache"] = True
+                    return cached_response
+            except Exception as e:
+                logger.error(f"Cache read error: {e}")
+        
         models_to_try = [primary_model] + self.get_fallback_models(primary_model, task_type)
         
         last_error = None
@@ -202,6 +221,16 @@ class AIOrchestrator:
                 if self._validate_response(result, task_type):
                     latency_ms = int((time.time() - start_time) * 1000)
                     
+                    # Build response
+                    response_data = {
+                        "success": True,
+                        "model": model.value,
+                        "response": result['response'],
+                        "latency_ms": latency_ms,
+                        "tokens_used": result.get('tokens_used', 0),
+                        "from_cache": False
+                    }
+                    
                     # Record metrics
                     self._record_metrics(
                         model=model,
@@ -211,13 +240,20 @@ class AIOrchestrator:
                         tokens_used=result.get('tokens_used', 0)
                     )
                     
-                    return {
-                        "success": True,
-                        "model": model.value,
-                        "response": result['response'],
-                        "latency_ms": latency_ms,
-                        "tokens_used": result.get('tokens_used', 0)
-                    }
+                    # Cache the response
+                    if use_cache and self.cache_manager:
+                        try:
+                            await self.cache_manager.cache_response(
+                                prompt=prompt,
+                                task_type=task_type.value,
+                                model=model.value,
+                                response=response_data,
+                                context=context
+                            )
+                        except Exception as e:
+                            logger.error(f"Cache write error: {e}")
+                    
+                    return response_data
                 else:
                     last_error = "Response quality validation failed"
                     continue
@@ -230,6 +266,7 @@ class AIOrchestrator:
                     latency_ms=int((time.time() - start_time) * 1000),
                     success=False
                 )
+                logger.error(f"Model {model.value} failed: {e}")
                 continue
         
         # All models failed
