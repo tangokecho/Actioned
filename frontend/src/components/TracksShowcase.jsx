@@ -86,7 +86,6 @@ const TracksShowcase = () => {
           ))}
         </div>
 
-        {/* Quick Wins Banner */}
         <div className="mt-12 bg-gradient-to-r from-[#1A1A1A] to-[#2D2D2D] rounded-xl p-8 border border-[#2D2D2D]">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-4">
