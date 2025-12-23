@@ -496,6 +496,65 @@ async def websocket_stats():
         ]
     }
 
+# ==================== RATE LIMITING ====================
+
+@api_router.get("/rate-limit/quota/{user_id}")
+async def get_user_quota(user_id: str, tier: RateLimitTier = RateLimitTier.FREE):
+    """Get user's rate limit quota information"""
+    return await rate_limiter.get_user_quota_info(user_id, tier)
+
+@api_router.post("/rate-limit/reset/{user_id}")
+async def reset_user_rate_limits(user_id: str):
+    """Reset rate limits for a user (admin function)"""
+    success = await rate_limiter.reset_user_limits(user_id)
+    return {"success": success, "user_id": user_id}
+
+# ==================== CIRCUIT BREAKERS ====================
+
+@api_router.get("/circuit-breakers")
+async def get_circuit_breakers():
+    """Get state of all circuit breakers"""
+    return circuit_breaker_manager.get_all_states()
+
+@api_router.get("/circuit-breakers/{name}")
+async def get_circuit_breaker(name: str):
+    """Get state of specific circuit breaker"""
+    breaker = circuit_breaker_manager.get_breaker(name)
+    if not breaker:
+        raise HTTPException(status_code=404, detail=f"Circuit breaker '{name}' not found")
+    return breaker.get_state()
+
+@api_router.post("/circuit-breakers/{name}/reset")
+async def reset_circuit_breaker(name: str):
+    """Manually reset a circuit breaker (admin function)"""
+    breaker = circuit_breaker_manager.get_breaker(name)
+    if not breaker:
+        raise HTTPException(status_code=404, detail=f"Circuit breaker '{name}' not found")
+    breaker.reset()
+    return {"success": True, "name": name}
+
+@api_router.post("/circuit-breakers/reset-all")
+async def reset_all_circuit_breakers():
+    """Reset all circuit breakers (admin function)"""
+    circuit_breaker_manager.reset_all()
+    return {"success": True, "message": "All circuit breakers reset"}
+
+# ==================== STREAMING ====================
+
+@api_router.get("/streaming/active")
+async def get_active_streams():
+    """Get list of active streams"""
+    return {
+        "active_streams": streaming_handler.get_active_streams(),
+        "count": len(streaming_handler.get_active_streams())
+    }
+
+@api_router.post("/streaming/{stream_id}/cancel")
+async def cancel_stream(stream_id: str):
+    """Cancel an active stream"""
+    await streaming_handler.cancel_stream(stream_id)
+    return {"success": True, "stream_id": stream_id}
+
 # ==================== CREDENTIALS ====================
 
 @api_router.post("/credentials/issue")
