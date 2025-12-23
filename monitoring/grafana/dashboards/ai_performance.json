@@ -1,0 +1,150 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "actionedx-ai-performance",
+    "title": "ActionEDx AI Performance",
+    "tags": ["actionedx", "ai", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "AI Requests per Second",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(ai_requests_total[1m])",
+            "legendFormat": "{{model}} - {{status}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "label": "Requests/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "AI Request Latency (p95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(ai_request_latency_seconds_bucket[5m]))",
+            "legendFormat": "{{model}} p95",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(ai_request_latency_seconds_bucket[5m]))",
+            "legendFormat": "{{model}} p50",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Latency"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Success Rate by Model",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(ai_requests_total{status='success'}[5m]) / rate(ai_requests_total[5m]) * 100",
+            "legendFormat": "{{model}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Success %", "max": 100, "min": 0},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Token Usage",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(ai_tokens_used_total[1m])",
+            "legendFormat": "{{model}} - {{task_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Tokens/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "AI Cost (USD)",
+        "type": "singlestat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(ai_cost_usd_total)",
+            "refId": "A"
+          }
+        ],
+        "format": "currencyUSD",
+        "prefix": "Total:",
+        "valueName": "current"
+      },
+      {
+        "id": 6,
+        "title": "Total AI Requests",
+        "type": "singlestat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(ai_requests_total)",
+            "refId": "A"
+          }
+        ],
+        "format": "short",
+        "valueName": "current"
+      },
+      {
+        "id": 7,
+        "title": "Cache Hit Rate",
+        "type": "gauge",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "(rate(cache_operations_total{operation='get',status='hit'}[5m]) / rate(cache_operations_total{operation='get'}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "format": "percent",
+        "thresholds": "50,80"
+      },
+      {
+        "id": 8,
+        "title": "Active WebSocket Connections",
+        "type": "graph",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 16},
+        "targets": [
+          {
+            "expr": "websocket_active_connections",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Connections"},
+          {"format": "short"}
+        ]
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    }
+  }
+}

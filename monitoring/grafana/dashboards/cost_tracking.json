@@ -1,0 +1,135 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "actionedx-cost-tracking",
+    "title": "ActionEDx Cost Tracking",
+    "tags": ["actionedx", "cost", "financial"],
+    "timezone": "browser",
+    "schemaVersion": 16,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Hourly AI Cost",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(ai_cost_usd_total[1h]) * 3600",
+            "legendFormat": "{{model}} - ${{task_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "currencyUSD", "label": "Cost/hour"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Cost by Model (24h)",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "sum by (model) (increase(ai_cost_usd_total[24h]))",
+            "legendFormat": "{{model}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Cost by Task Type (24h)",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum by (task_type) (increase(ai_cost_usd_total[24h]))",
+            "legendFormat": "{{task_type}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Token Usage by Model",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "rate(ai_tokens_used_total[5m])",
+            "legendFormat": "{{model}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Tokens/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Total Cost (Current)",
+        "type": "singlestat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(ai_cost_usd_total)",
+            "refId": "A"
+          }
+        ],
+        "format": "currencyUSD",
+        "sparkline": {"show": true}
+      },
+      {
+        "id": 6,
+        "title": "Cost Last Hour",
+        "type": "singlestat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(increase(ai_cost_usd_total[1h]))",
+            "refId": "A"
+          }
+        ],
+        "format": "currencyUSD"
+      },
+      {
+        "id": 7,
+        "title": "Cost Last 24h",
+        "type": "singlestat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(increase(ai_cost_usd_total[24h]))",
+            "refId": "A"
+          }
+        ],
+        "format": "currencyUSD",
+        "colorBackground": true,
+        "thresholds": "10,50"
+      },
+      {
+        "id": 8,
+        "title": "Projected Monthly Cost",
+        "type": "singlestat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(increase(ai_cost_usd_total[24h])) * 30",
+            "refId": "A"
+          }
+        ],
+        "format": "currencyUSD",
+        "colorBackground": true,
+        "thresholds": "300,1000"
+      }
+    ],
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    }
+  }
+}
