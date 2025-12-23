@@ -83,13 +83,27 @@ async def root():
 async def health_check():
     """Check health of all AI services"""
     metrics = ai_orchestrator.get_metrics_summary()
+    
+    # Get circuit breaker states
+    breakers = circuit_breaker_manager.get_all_states()
+    all_closed = all(b["state"] == "closed" for b in breakers.values())
+    
+    # Get cache health
+    cache_stats = await cache_manager.get_cache_stats()
+    
     return {
-        "status": "healthy",
+        "status": "healthy" if all_closed else "degraded",
         "database": "connected",
+        "cache": cache_stats.get("status", "disconnected"),
         "ai_orchestrator": {
             "status": "running",
             "total_requests": metrics.get("total_requests", 0),
             "success_rate": f"{metrics.get('success_rate', 100):.1f}%"
+        },
+        "circuit_breakers": {
+            "all_closed": all_closed,
+            "open_count": sum(1 for b in breakers.values() if b["state"] == "open"),
+            "details": breakers
         },
         "services": {
             "real_time_assistant": "running",
