@@ -519,48 +519,90 @@ async def issue_credential(user_id: str, track_id: str, credential_type: str = "
 # ==================== WEBSOCKET ENDPOINT ====================
 
 @app.websocket("/ws/assistant/{session_id}")
-async def websocket_assistant(websocket: WebSocket, session_id: str):
-    """WebSocket endpoint for real-time AI assistant"""
-    await websocket.accept()
-    logger.info(f"WebSocket connected: {session_id}")
+async def websocket_assistant(websocket: WebSocket, session_id: str, user_id: str = "anonymous"):
+    """Enhanced WebSocket endpoint for real-time AI assistant with streaming"""
+    
+    # Connect and register
+    await connection_manager.connect(websocket, session_id, user_id)
+    MetricsRecorder.record_websocket_connection(1)
+    
+    logger.info(f"✅ WebSocket connected: {session_id} (user: {user_id})")
     
     try:
-        # Send welcome message
-        await websocket.send_json({
-            "type": "connected",
-            "session_id": session_id,
-            "message": "🤖 **ActionEDx AI Assistant Connected**\n\nHow can I help you execute your innovation journey today?"
-        })
-        
         while True:
+            # Receive message
             data = await websocket.receive_json()
+            MetricsRecorder.record_websocket_message("inbound")
+            
+            # Increment message count
+            await connection_manager.increment_message_count(session_id)
+            
+            # Send typing indicator
+            await connection_manager.send_typing_indicator(session_id, True)
             
             # Process message
-            request = AssistantRequest(
-                user_id=data.get("user_id", "anonymous"),
-                message=data.get("message", ""),
-                mode=AssistantMode(data.get("mode", "strategist")),
-                session_id=session_id,
-                context=data.get("context")
-            )
-            
-            response = await real_time_assistant.chat(request)
-            
-            await websocket.send_json({
-                "type": "response",
-                "session_id": session_id,
-                "response": response.response,
-                "mode": response.mode.value,
-                "suggestions": response.suggestions,
-                "next_logical_step": response.next_logical_step,
-                "model_used": response.model_used,
-                "latency_ms": response.latency_ms
-            })
-            
+            try:
+                request = AssistantRequest(
+                    user_id=data.get("user_id", user_id),
+                    message=data.get("message", ""),
+                    mode=AssistantMode(data.get("mode", "strategist")),
+                    task_type=TaskType(data.get("task_type", "real_time_tutoring")),
+                    session_id=session_id,
+                    context=data.get("context")
+                )
+                
+                # Get AI response
+                start_time = datetime.utcnow()
+                
+                # Signal stream start
+                await connection_manager.stream_start(
+                    session_id, 
+                    request.task_type.value,
+                    "gpt-4o"
+                )
+                
+                # Get response (could add streaming support here)
+                response = await real_time_assistant.chat(request)
+                
+                # Stop typing indicator
+                await connection_manager.send_typing_indicator(session_id, False)
+                
+                # Send response
+                await websocket.send_json({
+                    "type": "response",
+                    "session_id": session_id,
+                    "response": response.response,
+                    "mode": response.mode.value,
+                    "suggestions": response.suggestions,
+                    "next_logical_step": response.next_logical_step,
+                    "model_used": response.model_used,
+                    "latency_ms": response.latency_ms,
+                    "timestamp": datetime.utcnow().isoformat()
+                })
+                
+                MetricsRecorder.record_websocket_message("outbound")
+                
+                # Signal stream end
+                await connection_manager.stream_end(session_id, {
+                    "tokens_used": response.tokens_used,
+                    "latency_ms": response.latency_ms
+                })
+                
+            except Exception as e:
+                logger.error(f"Message processing error: {e}")
+                await connection_manager.send_error(session_id, str(e), "processing_error")
+                MetricsRecorder.record_websocket_error("processing_error")
+                
     except WebSocketDisconnect:
         logger.info(f"WebSocket disconnected: {session_id}")
+        connection_manager.disconnect(session_id)
+        MetricsRecorder.record_websocket_connection(-1)
+        
     except Exception as e:
         logger.error(f"WebSocket error: {e}")
+        MetricsRecorder.record_websocket_error("unexpected_error")
+        connection_manager.disconnect(session_id)
+        MetricsRecorder.record_websocket_connection(-1)
         await websocket.close()
 
 # ==================== APP SETUP ====================
