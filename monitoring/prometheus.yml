@@ -5,7 +5,7 @@ global:
   evaluation_interval: 15s
   external_labels:
     cluster: 'actionedx-dev'
-    environment: 'production'
+    environment: 'development'
 
 # Alertmanager configuration (optional)
 # alerting:
@@ -26,11 +26,7 @@ scrape_configs:
     scrape_interval: 10s
     scrape_timeout: 5s
 
-  # Redis Metrics (via redis_exporter if needed)
-  - job_name: 'redis'
-    static_configs:
-      - targets: ['redis:6379']
-    scrape_interval: 15s
+  # Redis requires a dedicated HTTP exporter; port 6379 is not a scrape endpoint.
 
   # Prometheus self-monitoring
   - job_name: 'prometheus'
