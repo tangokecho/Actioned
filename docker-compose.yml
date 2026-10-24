@@ -1,7 +1,5 @@
 # Docker Compose for ActionEDx AI Backend Development
-# Includes: Backend, Frontend, MongoDB, Redis, Prometheus, Grafana
-
-version: '3.8'
+# Supporting services only; run backend/frontend separately. See README_DOCKER.md.
 
 services:
   # MongoDB Database
@@ -12,7 +10,7 @@ services:
     environment:
       MONGO_INITDB_DATABASE: actionedx
     ports:
-      - "27017:27017"
+      - "127.0.0.1:27017:27017"
     volumes:
       - mongodb_data:/data/db
     healthcheck:
@@ -30,7 +28,7 @@ services:
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -57,11 +55,14 @@ services:
       - '--storage.tsdb.retention.time=30d'
       - '--web.enable-lifecycle'
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     networks:
       - actionedx-network
     depends_on:
       - redis
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Grafana Dashboard
   grafana:
@@ -74,11 +75,11 @@ services:
       - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
     environment:
       - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=actionedx2024
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD in .env}
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=http://localhost:3001
     ports:
-      - "3001:3000"
+      - "127.0.0.1:3001:3000"
     networks:
       - actionedx-network
     depends_on:
